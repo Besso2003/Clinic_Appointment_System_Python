@@ -162,7 +162,6 @@ DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
 SECRET_KEY=your_secret_key
-DEBUG=True
 ```
 
 ---
