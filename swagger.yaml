@@ -1,0 +1,297 @@
+openapi: 3.0.0
+info:
+  title: Clinic Appointment System API
+  version: "1.0"
+  description: API documentation for Clinic Appointment System
+
+paths:
+
+  # --- ACCOUNTS ---
+  /accounts/register/:
+    post:
+      tags: [Accounts]
+      summary: Patient registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: {type: string}
+                email: {type: string}
+                password: {type: string}
+      responses:
+        '201': {description: Created successfully}
+
+  /accounts/login/:
+    post:
+      tags: [Accounts]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: {type: string}
+                password: {type: string}
+      responses:
+        '200': {description: Login successful, returns token}
+
+  /accounts/profile/:
+    get:
+      tags: [Accounts]
+      summary: Get own profile
+      responses:
+        '200': {description: Success}
+    put:
+      tags: [Accounts]
+      summary: Update own profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: {type: string}
+                email: {type: string}
+      responses:
+        '200': {description: Updated successfully}
+
+
+  # --- SCHEDULING ---
+  /scheduling/{doctor_id}/availability/:
+    post:
+      tags: [Scheduling]
+      summary: Set doctor weekly schedule
+      parameters:
+        - in: path
+          name: doctor_id
+          schema: {type: integer}
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                weekday: 
+                  type: string
+                  enum: [MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY]
+                start_time: {type: string, format: time}
+                end_time: {type: string, format: time}
+      responses:
+        '201': {description: Schedule created}
+
+  /scheduling/{doctor_id}/exceptions/:
+    post:
+      tags: [Scheduling]
+      summary: Add schedule exception (vacation or one-off working day)
+      parameters:
+        - in: path
+          name: doctor_id
+          schema: {type: integer}
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date: {type: string, format: date}
+                type:
+                  type: string
+                  enum: [VACATION, WORKING_DAY]
+      responses:
+        '201': {description: Exception added}
+
+  /availability/slots/:
+    get:
+      tags: [Scheduling]
+      summary: List available time slots for booking
+      parameters:
+        - name: doctor_id
+          in: query
+          schema: {type: integer}
+        - name: date
+          in: query
+          schema: {type: string, format: date}
+      responses:
+        '200': {description: List of available slots}
+
+
+  # --- APPOINTMENTS ---
+  /appointments/book/:
+    post:
+      tags: [Appointments]
+      summary: Book a generated slot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slot_id: {type: integer}
+                reason: {type: string}
+      responses:
+        '201': {description: Appointment booked successfully}
+
+  /appointments/{id}/:
+    get:
+      tags: [Appointments]
+      summary: Get appointment details
+      parameters:
+        - in: path
+          name: id
+          schema: {type: integer}
+          required: true
+      responses:
+        '200': {description: Appointment details}
+
+    put:
+      tags: [Appointments]
+      summary: Update appointment (reschedule / cancel)
+      parameters:
+        - in: path
+          name: id
+          schema: {type: integer}
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                datetime: {type: string, format: date-time}
+                status: 
+                  type: string
+                  enum: [REQUESTED, CONFIRMED, CHECKED_IN, COMPLETED, CANCELLED, NO_SHOW]
+      responses:
+        '200': {description: Appointment updated}
+
+    delete:
+      tags: [Appointments]
+      summary: Cancel appointment
+      parameters:
+        - in: path
+          name: id
+          schema: {type: integer}
+          required: true
+      responses:
+        '204': {description: Appointment cancelled}
+
+  /appointments/{id}/checkin/:
+    post:
+      tags: [Appointments]
+      summary: Check-in patient
+      parameters:
+        - in: path
+          name: id
+          schema: {type: integer}
+          required: true
+      responses:
+        '200': {description: Checked in successfully}
+
+  /appointments/{id}/complete/:
+    post:
+      tags: [Appointments]
+      summary: Mark appointment as completed
+      parameters:
+        - in: path
+          name: id
+          schema: {type: integer}
+          required: true
+      responses:
+        '200': {description: Completed successfully}
+
+  /appointments/{id}/noshow/:
+    post:
+      tags: [Appointments]
+      summary: Mark appointment as no-show
+      parameters:
+        - in: path
+          name: id
+          schema: {type: integer}
+          required: true
+      responses:
+        '200': {description: Marked as no-show}
+
+
+  # --- MEDICAL RECORDS ---
+  /medical_records/:
+    post:
+      tags: [MedicalRecords]
+      summary: Doctor fills out diagnosis and prescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appointment_id: {type: integer}
+                diagnosis: {type: string}
+                notes: {type: string}
+                prescription:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      drug: {type: string}
+                      dose: {type: string}
+                      duration: {type: string}
+      responses:
+        '201': {description: Consultation record created}
+
+  /medical_records/{appointment_id}/:
+    get:
+      tags: [MedicalRecords]
+      summary: Patient views consultation record
+      parameters:
+        - in: path
+          name: appointment_id
+          schema: {type: integer}
+          required: true
+      responses:
+        '200': {description: Consultation record retrieved}
+
+
+  # --- DASHBOARD ---
+  /dashboard/users/:
+    get:
+      tags: [Dashboard]
+      summary: List all users
+      responses:
+        '200': {description: Success}
+
+    post:
+      tags: [Dashboard]
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: {type: string}
+                email: {type: string}
+                password: {type: string}
+                role: 
+                  type: string
+                  enum: [PATIENT, DOCTOR, RECEPTIONIST, ADMIN]
+      responses:
+        '201': {description: User created successfully}
+
+  /dashboard/analytics/:
+    get:
+      tags: [Dashboard]
+      summary: View analytics dashboard
+      responses:
+        '200': {description: Returns metrics like no-show rate, peak hours, revenue}

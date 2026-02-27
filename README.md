@@ -4,6 +4,30 @@ A role-based clinic management system built with **Django** and **PostgreSQL** t
 
 ---
 
+## 📖 API Documentation
+
+You can view all APIs interactively using **Swagger Editor**.
+
+### Steps:
+
+1. Open **Swagger Editor** in your browser:  
+   [https://editor.swagger.io/](https://editor.swagger.io/)
+
+2. Open or paste the `swagger.yaml` file from this project:  
+   [swagger.yaml](https://github.com/Besso2003/Clinic_Appointment_System_Python/blob/main/swagger.yaml)
+
+3. You’ll see **all endpoints categorized by app**:
+   - `Accounts` → User registration, login, profile
+   - `Scheduling` → Doctor availability & slot generation
+   - `Appointments` → Booking, lifecycle, check-in, rescheduling
+   - `MedicalRecords` → Consultation records & prescriptions
+   - `Dashboard` → Admin analytics & user management
+
+### Notes:
+- Any new endpoints added to the project should be updated in the Swagger file immediately.  
+
+---
+
 ## 📌 Features
 
 ### 👤 Patient
