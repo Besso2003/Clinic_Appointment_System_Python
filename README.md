@@ -244,6 +244,12 @@ git merge name
 git push origin main
 ```
 
+
+### Tabels In System
+
+<img width="3493" height="8192" alt="Centric AppointmentMapping" src="https://github.com/user-attachments/assets/527c6faa-8f1d-4183-a075-3732d25c7efc" />
+
+
 ---
 
 ## 🤝 Contributors
