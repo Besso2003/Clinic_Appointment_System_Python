@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
 from .forms import UserRegistrationForm
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib import messages
 # Create your views here.
 
 def home_view(request):
@@ -22,15 +21,22 @@ def register_view(request):
 
 @login_required
 def view_profile(request):
-    return render(request, "accounts/profile.html")
+    user = request.user 
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        profile_picture = request.FILES.get("profile_picture")
 
-def edit_profile(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('view_profile')
-    else:
-        form = UserRegistrationForm(instance=request.user)
-    
-    return render(request, 'accounts/edit_profile.html', {'form': form})
+        # Update fields
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        if profile_picture:
+            user.profile_picture = profile_picture
+
+        user.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect("profile") 
+
+    return render(request, "accounts/profile.html", {"user": user})

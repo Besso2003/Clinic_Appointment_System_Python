@@ -3,18 +3,135 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Profile - {{ user.username }}</title>
+    <title>My Profile | MediFlow</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+    <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 </head>
-<body>
-    <div class="glass-card" style="max-width:600px;margin:50px auto;text-align:center;">
-        {% if user.profile.image %}
-            <img src="{{ user.profile.image.url }}" class="avatar" style="width:100px;height:100px;">
-        {% else %}
-            <img src="{% static 'img/default-avatar.png' %}" class="avatar" style="width:100px;height:100px;">
-        {% endif %}
-        <h2>{{ user.username }}</h2>
-        <p>{{ user.email }}</p>
+<body class="auth-page">
+
+<div class="glass-card auth-card">
+
+    <!-- Top Row: Home (Left) + Edit Toggle (Right) -->
+    <div class="top-row">
+        
+        <!-- Home Button -->
+        <button type="button" class="btn-home" onclick="window.location.href='/'">
+            Home
+        </button>
+
+        <!-- Edit Toggle -->
+        <div class="edit-toggle-row">
+            <span class="toggle-label">Edit</span>
+            <label class="switch">
+                <input type="checkbox" id="editToggle" onchange="toggleEdit()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
     </div>
+
+    <!-- Avatar -->
+    <div class="profile-avatar">
+        <img id="avatarPreview" 
+             src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'img/default-avatar.png' %}{% endif %}" 
+             class="avatar-lg">
+    </div>
+
+    <!-- Profile Form -->
+    <form method="post" enctype="multipart/form-data" class="med-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="first_name" value="{{ user.first_name }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" value="{{ user.username }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ user.email }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label>Role</label>
+            <input type="text" value="{{ user.get_role_display }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label>Profile Picture</label>
+            <input type="file" name="profile_picture" id="profileInput" disabled>
+        </div>
+
+        <button type="submit" id="saveBtn" class="btn-med btn-solid" style="display:none; width:100%;">
+            Save Changes
+        </button>
+    </form>
+</div>
+
+<script>
+function toggleEdit() {
+    const isEditing = document.getElementById("editToggle").checked;
+    const inputs = document.querySelectorAll("input[name], input[type='file']");
+    const saveBtn = document.getElementById("saveBtn");
+
+    inputs.forEach(input => input.disabled = !isEditing);
+    if (saveBtn) saveBtn.style.display = isEditing ? "block" : "none";
+}
+
+// Cropper
+let cropper;
+const profileInput = document.getElementById('profileInput');
+const avatarPreview = document.getElementById('avatarPreview');
+
+profileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    avatarPreview.src = url;
+
+    // Destroy previous cropper instance
+    if (cropper) cropper.destroy();
+
+    // Enable cropper
+    cropper = new Cropper(avatarPreview, {
+        aspectRatio: 1,       
+        viewMode: 1,          
+        movable: true,        
+        zoomable: false,
+        scalable: false,
+        rotatable: false,
+        cropBoxResizable: true
+    });
+});
+
+// Before submitting, get cropped data
+document.querySelector('form').addEventListener('submit', function(e){
+    if (cropper) {
+        cropper.getCroppedCanvas().toBlob(function(blob){
+            const fileInput = document.getElementById('profileInput');
+            const file = new File([blob], "profile.jpg", {type: "image/jpeg"});
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+
+            e.target.submit();  // submit form after replacing file
+        });
+        e.preventDefault();  
+    }
+});
+</script>
+
 </body>
 </html>
