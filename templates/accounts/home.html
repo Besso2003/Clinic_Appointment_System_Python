@@ -3,49 +3,168 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MediFlow | Advanced Clinic Management</title>
+    <title>MediFlow | Smart Clinic Management Platform</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <header class="main-header">
-        <div class="logo-text">✚ MEDIFLOW</div>
-        <nav>
-            {% if not user.is_authenticated %}
-                <a href="{% url 'login' %}" style="margin-right:20px; color:var(--primary); text-decoration:none; font-weight:600;">Login</a>
-                <a href="{% url 'register' %}" class="btn-med btn-solid">Join Portal</a>
-            {% else %}
-                <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-med btn-outline">Sign Out</button>
-                </form>
-            {% endif %}
-        </nav>
-    </header>
+<!-- ================= HEADER ================= -->
+<header class="main-header">
+    <div class="logo-text">✚ MediFlow</div>
+    <nav>
+        <a href="#features">Features</a>
+        <a href="#solutions">Solutions</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#security">Security</a>
 
-    <section class="hero-section">
-        <h1>Clinic Management Reimagined</h1>
-        <p>Private cloud infrastructure for modern healthcare delivery.</p>
-    </section>
-
-    <div class="glass-card">
-        {% if user.is_authenticated %}
-            <span class="status-badge">ACTIVE PORTAL</span>
-            <h2>Welcome Back, {{ user.username }}</h2>
-            <p>You are currently logged in as a <strong>{{ user.get_role_display }}</strong>.</p>
-            <div style="margin-top:30px;">
-                <a href="#" class="btn-med btn-solid">Access Dashboard</a>
-            </div>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}" class="nav-link">Login</a>
+            <a href="{% url 'register' %}" class="btn-med btn-solid">Get Started</a>
         {% else %}
-            <h2>Integrated Healthcare Solutions</h2>
-            <p>Secure, scalable, and built for multi-branch clinic excellence.</p>
-            <div style="margin-top:30px;">
-                <a href="{% url 'register' %}" class="btn-med btn-solid" style="margin-right:10px;">Get Started</a>
-                <a href="https://www.ehealth.com.eg/" class="btn-med btn-outline">Learn More</a>
-            </div>
+            <a href="#" class="btn-med btn-solid">Dashboard</a>
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-med btn-outline">Logout</button>
+            </form>
         {% endif %}
+    </nav>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero-section">
+    <h1>Smarter Clinic Operations Start Here</h1>
+    <p>
+        MediFlow is a modern clinic management platform that streamlines appointments,
+        empowers medical staff, and enhances patient experience through secure,
+        intelligent workflows.
+    </p>
+
+    {% if not user.is_authenticated %}
+    <div style="margin-top:30px;">
+        <a href="{% url 'register' %}" class="btn-med btn-solid">Start Free</a>
+        <a href="#features" class="btn-med btn-outline">Explore Features</a>
     </div>
+    {% endif %}
+</section>
+
+<!-- ================= TRUST BAR ================= -->
+<section class="content-section alt-bg">
+    <p style="text-align:center; font-weight:600;">
+        Trusted by clinics to manage scheduling, patient records, and consultations efficiently.
+    </p>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section id="features" class="content-section">
+    <h2>Powerful Features Built for Healthcare</h2>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>📅 Smart Appointment Scheduling</h3>
+            <p>Automated slot generation, conflict prevention, and buffer times ensure efficient scheduling.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>👥 Role-Based Access</h3>
+            <p>Secure permissions for patients, doctors, receptionists, and administrators.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🩺 Consultation Management</h3>
+            <p>Doctors record diagnoses, prescriptions, and tests with a streamlined EMR-lite system.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>📊 Analytics & Insights</h3>
+            <p>Track no-show rates, peak hours, and clinic performance with actionable dashboards.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🔄 Rescheduling & Audit Logs</h3>
+            <p>Full history of appointment changes with timestamps and reasons for compliance.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>⏱ Queue & Check-In System</h3>
+            <p>Real-time queue management with waiting time tracking for better patient flow.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= SOLUTIONS ================= -->
+<section id="solutions" class="content-section alt-bg">
+    <h2>Solutions for Every Role</h2>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <h3>For Patients</h3>
+            <p>Book appointments, manage schedules, and access consultation summaries securely.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>For Doctors</h3>
+            <p>Manage daily queues, confirm appointments, and document consultations efficiently.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>For Receptionists</h3>
+            <p>Coordinate schedules, check-in patients, and maintain smooth clinic operations.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>For Administrators</h3>
+            <p>Control user roles, monitor analytics, and export operational reports.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= WORKFLOW ================= -->
+<section id="workflow" class="content-section">
+    <h2>Seamless Appointment Workflow</h2>
+    <p style="text-align:center;">
+        From booking to consultation completion, MediFlow ensures a structured and transparent process.
+    </p>
+
+    <div class="workflow">
+        <span class="badge">Requested</span> →
+        <span class="badge">Confirmed</span> →
+        <span class="badge">Checked-In</span> →
+        <span class="badge">Completed</span>
+        <br><br>
+        <span class="badge cancel">Cancelled</span>
+        <span class="badge cancel">No Show</span>
+    </div>
+</section>
+
+<!-- ================= SECURITY ================= -->
+<section id="security" class="content-section alt-bg">
+    <h2>Security & Compliance</h2>
+    <ul class="why-list">
+        <li>🔐 Role-based data protection</li>
+        <li>🗂 Secure patient record handling</li>
+        <li>📜 Audit trails for accountability</li>
+        <li>☁️ Reliable cloud-ready architecture</li>
+    </ul>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta-section">
+    <h2>Transform Your Clinic Today</h2>
+    <p>Join the future of healthcare management with MediFlow.</p>
+
+    {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}" class="btn-med btn-solid">Create Your Account</a>
+    {% else %}
+        <a href="#" class="btn-med btn-solid">Go to Dashboard</a>
+    {% endif %}
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="main-footer">
+    <p>© {% now "Y" %} MediFlow</p>
+    <p>Smart, Secure, Scalable Clinic Management.</p>
+</footer>
 
 </body>
 </html>
