@@ -24,6 +24,21 @@ body {
     line-height: 1.6;
 }
 
+html, body {
+    height: 100%;
+}
+
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.content-section {
+    flex: 1; /* takes all remaining space, pushing footer down */
+}
+
 a {
     text-decoration: none;
     color: var(--primary);
