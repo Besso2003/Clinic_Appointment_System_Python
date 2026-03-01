@@ -58,6 +58,31 @@ def mark_as_completed(request, appointment_id):
 
     return HttpResponse("Appointment marked as completed successfully.")
 
+@login_required
+def show_create_appointment_form(request):
+    if request.user.role != "P":
+        return HttpResponseForbidden("Only patients can book appointments.")
+
+    # Optional: filter by doctor via GET parameter
+    doctor_id = request.GET.get("doctor_id")
+
+    slots = Slot.objects.filter(is_available=True).select_related('doctor_schedule__doctor')
+    if doctor_id:
+        slots = slots.filter(doctor_schedule__doctor_id=doctor_id)
+
+    # Get all doctors for dropdown
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    doctors = User.objects.filter(role="D")
+
+    context = {
+        "slots": slots,
+        "doctors": doctors,
+        "selected_doctor_id": doctor_id
+    }
+    return render(request, "appointments/create_appointment.html", context)
+
+
 
 @login_required
 @transaction.atomic
