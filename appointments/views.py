@@ -143,3 +143,129 @@ def cancel_appointment(request, appointment_id):
     appointment.slot.save()
 
     return HttpResponse("Appointment cancelled successfully.")
+
+
+@login_required
+@transaction.atomic
+def reschedule_appointment(request, appointment_id, new_slot_id):
+
+    appointment = get_object_or_404(
+        Appointment.objects.select_for_update(),
+        id=appointment_id
+    )
+
+    if request.user != appointment.patient:
+        return HttpResponseForbidden("You cannot reschedule this appointment.")
+
+    new_slot = get_object_or_404(
+        Slot.objects.select_for_update(),
+        id=new_slot_id
+    )
+
+    prevent_double_booking(new_slot)
+
+    old_slot = appointment.slot
+    old_slot.is_available = True
+    old_slot.save()
+
+    appointment.slot = new_slot
+    appointment.doctor = new_slot.doctor_schedule.doctor
+    appointment.status = "REQUESTED"
+    appointment.save()
+
+    new_slot.is_available = False
+    new_slot.save()
+
+    return redirect("list_patient_appointments")
+
+@login_required
+def confirm_appointment(request, appointment_id):
+
+    if request.user.role != "R":
+        return HttpResponseForbidden("Only receptionist can confirm.")
+
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if appointment.status != "REQUESTED":
+        return HttpResponseForbidden("Only requested appointments can be confirmed.")
+
+    appointment.status = "CONFIRMED"
+    appointment.save()
+
+    return redirect("list_today_appointments")
+
+@login_required
+def mark_as_checked_in(request, appointment_id):
+
+    if request.user.role != "R":
+        return HttpResponseForbidden("Only receptionist allowed.")
+
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if appointment.status != "CONFIRMED":
+        return HttpResponseForbidden("Appointment must be confirmed first.")
+
+    appointment_datetime = datetime.combine(
+        timezone.now().date(),
+        appointment.slot.start_time
+    )
+
+    appointment_datetime = timezone.make_aware(appointment_datetime)
+
+    allowed_period = appointment_datetime + timedelta(minutes=15)
+
+    if timezone.now() > allowed_period:
+        appointment.status = "NO_SHOW"
+        appointment.save()
+        return HttpResponseForbidden("Patient exceeded 15 min. Marked as NO_SHOW.")
+
+    appointment.status = "CHECKED_IN"
+    appointment.save()
+
+    return redirect("list_today_appointments")
+
+
+@login_required
+def list_patient_appointments(request):
+
+    if request.user.role != "P":
+        return HttpResponseForbidden("Only patients allowed.")
+
+    appointments = Appointment.objects.filter(
+        patient=request.user
+    ).select_related("doctor", "slot")
+
+    return render(request, "appointments/patient_list.html", {
+        "appointments": appointments
+    })
+
+
+@login_required
+def list_doctor_appointments(request):
+
+    if request.user.role != "D":
+        return HttpResponseForbidden("Only doctors allowed.")
+
+    appointments = Appointment.objects.filter(
+        doctor=request.user
+    ).select_related("patient", "slot")
+
+    return render(request, "appointments/doctor_list.html", {
+        "appointments": appointments
+    })
+
+@login_required
+def list_today_appointments(request):
+
+    if request.user.role != "R":
+        return HttpResponseForbidden("Only receptionist allowed.")
+
+    today = timezone.now().date()
+
+    appointments = Appointment.objects.filter(
+        slot__doctor_schedule__day_of_week=today.strftime("%A")
+    ).select_related("patient", "doctor", "slot")
+
+    return render(request, "appointments/today_list.html", {
+        "appointments": appointments
+    })
