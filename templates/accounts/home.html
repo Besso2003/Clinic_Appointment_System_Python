@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediFlow | Advanced Clinic Management</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo-text">✚ MEDIFLOW</div>
+        <nav>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}" style="margin-right:20px; color:var(--primary); text-decoration:none; font-weight:600;">Login</a>
+                <a href="{% url 'register' %}" class="btn-med btn-solid">Join Portal</a>
+            {% else %}
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-med btn-outline">Sign Out</button>
+                </form>
+            {% endif %}
+        </nav>
+    </header>
+
+    <section class="hero-section">
+        <h1>Clinic Management Reimagined</h1>
+        <p>Private cloud infrastructure for modern healthcare delivery.</p>
+    </section>
+
+    <div class="glass-card">
+        {% if user.is_authenticated %}
+            <span class="status-badge">ACTIVE PORTAL</span>
+            <h2>Welcome Back, {{ user.username }}</h2>
+            <p>You are currently logged in as a <strong>{{ user.get_role_display }}</strong>.</p>
+            <div style="margin-top:30px;">
+                <a href="#" class="btn-med btn-solid">Access Dashboard</a>
+            </div>
+        {% else %}
+            <h2>Integrated Healthcare Solutions</h2>
+            <p>Secure, scalable, and built for multi-branch clinic excellence.</p>
+            <div style="margin-top:30px;">
+                <a href="{% url 'register' %}" class="btn-med btn-solid" style="margin-right:10px;">Get Started</a>
+                <a href="https://www.ehealth.com.eg/" class="btn-med btn-outline">Learn More</a>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
