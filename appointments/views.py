@@ -92,3 +92,29 @@ def create_appointment(request, slot_id):
 def prevent_double_booking(slot):
     if not slot.is_available:
         raise ValidationError("Slot already booked.")
+    
+@login_required
+@transaction.atomic
+def cancel_appointment(request, appointment_id):
+
+    appointment = get_object_or_404(
+        Appointment.objects.select_for_update(),
+        id=appointment_id
+    )
+
+    if request.user.role == "P" and appointment.patient != request.user:
+        return HttpResponseForbidden("You can only cancel your own appointments.")
+    elif request.user.role not in ["P", "R"]:
+        return HttpResponseForbidden("Only patients or receptionists can cancel appointments.")
+
+    if appointment.status not in ["REQUESTED", "CONFIRMED"]:
+        return HttpResponseForbidden("Appointment cannot be cancelled at this stage.")
+
+    appointment.status = "CANCELLED"
+    appointment.updated_at = timezone.now()
+    appointment.save()
+
+    appointment.slot.is_available = True
+    appointment.slot.save()
+
+    return HttpResponse("Appointment cancelled successfully.")
