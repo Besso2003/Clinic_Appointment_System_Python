@@ -31,3 +31,7 @@ class Slot(models.Model):
 
     class Meta:
         unique_together = ('doctor_schedule', 'start_time', 'end_time')
+
+
+
+
