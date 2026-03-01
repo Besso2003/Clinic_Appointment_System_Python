@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from .forms import UserRegistrationForm
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+
 # Create your views here.
 
 def home_view(request):
     return render(request, 'accounts/home.html')
+
 
 def register_view(request):
     if request.method == 'POST':

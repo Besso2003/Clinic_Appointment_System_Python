@@ -57,3 +57,38 @@ def mark_as_completed(request, appointment_id):
     appointment.save()
 
     return HttpResponse("Appointment marked as completed successfully.")
+
+
+@login_required
+@transaction.atomic
+def create_appointment(request, slot_id):
+
+    if request.user.role != "P":
+        return HttpResponseForbidden("Only patients can book appointments.")
+
+    slot = get_object_or_404(
+        Slot.objects.select_for_update(),
+        id=slot_id
+    )
+
+    prevent_double_booking(slot)
+
+    doctor = slot.doctor_schedule.doctor
+
+    appointment = Appointment.objects.create(
+        patient=request.user,
+        doctor=doctor,
+        slot=slot,
+        status="REQUESTED"
+    )
+
+    slot.is_available = False
+    slot.save()
+
+
+    return HttpResponse("list_patient_appointments")
+
+
+def prevent_double_booking(slot):
+    if not slot.is_available:
+        raise ValidationError("Slot already booked.")

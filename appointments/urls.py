@@ -8,4 +8,8 @@ urlpatterns = [
         views.mark_as_no_show,
         name="mark_as_no_show"
     ),
+    path("/create/",
+         views.create_appointment,
+         name="create_appointment"
+         )
 ]
