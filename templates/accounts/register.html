@@ -6,18 +6,48 @@
     <title>Join MediFlow | Patient & Staff Registration</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+    <style>
+        /* Center avatar and make it circular */
+        .avatar-preview-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .avatar-lg {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #1d4ed8; /* Blue border */
+        }
+    </style>
 </head>
 <body class="auth-page">
 
-    <div class="glass-card auth-card">
-        <div class="medical-icon" style="margin-bottom: 1rem;">✚</div>
-        <h2>Create Clinic Account</h2>
-        <p class="subtitle">Join our integrated healthcare network</p>
+<div class="glass-card auth-card">
 
-        <form method="post" enctype="multipart/form-data" class="med-form">
-            {% csrf_token %}
-            
-            {% for field in form %}
+    <div class="medical-icon" style="margin-bottom: 1rem;">✚</div>
+    <h2>Create Clinic Account</h2>
+    <p class="subtitle">Join our integrated healthcare network</p>
+
+    <form method="post" enctype="multipart/form-data" class="med-form">
+        {% csrf_token %}
+
+        <!-- Centered Avatar Preview -->
+        <div class="avatar-preview-container">
+            <img id="avatarPreview" src="{% static 'img/default-avatar.png' %}" class="avatar-lg">
+        </div>
+
+        <!-- Custom File Input -->
+        <div class="form-group custom-file-wrapper">
+            <input type="text" id="fileName" placeholder="No file chosen" readonly>
+            <label for="profileInput" class="browse-btn">Browse</label>
+            <input type="file" name="profile_picture" id="profileInput" accept="image/*" hidden>
+        </div>
+
+        {% for field in form %}
+            {% if field.name != 'profile_picture' %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
@@ -28,17 +58,52 @@
                         <p class="error-text">{{ error }}</p>
                     {% endfor %}
                 </div>
-            {% endfor %}
-            
-            <button type="submit" class="btn-med btn-solid" style="width: 100%; margin-top: 1rem;">
-                Create Account
-            </button>
-        </form>
+            {% endif %}
+        {% endfor %}
 
-        <div class="auth-footer">
-            <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-        </div>
+        <button type="submit" class="btn-med btn-solid" style="width: 100%; margin-top: 1rem;">
+            Create Account
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
     </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+const profileInput = document.getElementById('profileInput');
+const fileName = document.getElementById('fileName');
+
+profileInput.addEventListener('change', function() {
+    if (profileInput.files.length > 0) {
+        fileName.value = profileInput.files[0].name;
+    } else {
+        fileName.value = "No file chosen";
+    }
+
+    // Update avatar preview and cropper
+    const file = profileInput.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    const image = document.getElementById('avatarPreview');
+    image.src = url;
+
+    if (window.cropper) window.cropper.destroy();
+
+    window.cropper = new Cropper(image, {
+        aspectRatio: 1,
+        viewMode: 1,
+        movable: true,
+        zoomable: false,
+        scalable: false,
+        rotatable: false,
+        cropBoxResizable: true
+    });
+});
+</script>
 
 </body>
 </html>

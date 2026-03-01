@@ -12,36 +12,38 @@
 <!-- ================= HEADER ================= -->
 <header class="main-header">
     <div class="logo-text">✚ MediFlow</div>
-    <nav>
+
+    <!-- Centered Navbar Links -->
+    <nav class="nav-center">
         <a href="#features">Features</a>
         <a href="#solutions">Solutions</a>
         <a href="#workflow">Workflow</a>
         <a href="#security">Security</a>
+    </nav>
 
+    <!-- Right Side: Auth Links or User Menu -->
+    <div class="nav-right">
         {% if not user.is_authenticated %}
             <a href="{% url 'login' %}" class="nav-link">Login</a>
             <a href="{% url 'register' %}" class="btn-med btn-solid">Get Started</a>
         {% else %}
-            <!-- User menu container -->
             <div class="user-menu">
                 <a href="{% url 'profile' %}" class="user-info">
-                    {% if user.profile.image %}
-                        <img src="{{ user.profile.image.url }}" alt="User Photo" class="avatar">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="User Photo" class="avatar">
                     {% else %}
                         <img src="{% static 'img/default-avatar.png' %}" alt="User Photo" class="avatar">
                     {% endif %}
                     <span class="username">{{ user.username }}</span>
                 </a>
-            
                 <form action="{% url 'logout' %}" method="post" class="logout-form">
                     {% csrf_token %}
                     <button type="submit" class="btn-med btn-outline">Logout</button>
                 </form>
             </div>
         {% endif %}
-    </nav>
+    </div>
 </header>
-
 <!-- ================= HERO ================= -->
 <section class="hero-section">
     <h1>Smarter Clinic Operations Start Here</h1>
