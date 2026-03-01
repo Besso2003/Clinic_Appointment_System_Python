@@ -9,6 +9,16 @@ class User(AbstractUser):
         ('R', 'Receptionist'),
         ('A', 'Admin'),
     ]
+    email = models.EmailField(
+        unique=True, 
+        blank=False, 
+        null=False,
+        error_messages={
+            'unique': "A user with that email already exists.",
+        }
+    )
+    first_name = models.CharField(max_length=150, blank=False)
+    last_name = models.CharField(max_length=150, blank=False)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default='P')
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
 
