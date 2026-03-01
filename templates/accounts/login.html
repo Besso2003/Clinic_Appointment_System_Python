@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | MediFlow Portal</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="auth-page">
+
+    <div class="glass-card auth-card" style="max-width: 450px;">
+        <div class="medical-icon" style="margin-bottom: 1rem;">✚</div>
+        <h2>Portal Login</h2>
+        <p class="subtitle">Access your clinic dashboard and records</p>
+
+        <form method="post" class="med-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="error-text" style="text-align: center; margin-bottom: 15px; padding: 10px; background: #fee2e2; border-radius: 8px;">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="error-text">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn-med btn-solid" style="width: 100%; margin-top: 1rem;">
+                Secure Login
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>New to the clinic? <a href="{% url 'register' %}">Create an account</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
