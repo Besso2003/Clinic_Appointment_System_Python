@@ -1,7 +1,7 @@
 """
 URL configuration for clinic_appointment project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+    he `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
 Examples:
 Function views
