@@ -336,3 +336,51 @@ nav a:hover {
 section {
     scroll-margin-top: 70px; /* adjust based on header height */
 }
+
+/* ================= NAVBAR USER MENU ================= */
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Make avatar + username clickable to go to profile */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Hover effect for username */
+.user-info:hover .username {
+    color: var(--primary);
+}
+
+/* Avatar image */
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+}
+
+/* Username text */
+.username {
+    font-size: 14px;
+}
+
+/* Logout button spacing */
+.logout-form {
+    margin-left: 10px;
+}
+
+/* Make nav spacing flexible */
+.main-header nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}

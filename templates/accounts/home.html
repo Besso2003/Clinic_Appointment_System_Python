@@ -22,11 +22,22 @@
             <a href="{% url 'login' %}" class="nav-link">Login</a>
             <a href="{% url 'register' %}" class="btn-med btn-solid">Get Started</a>
         {% else %}
-            <a href="#" class="btn-med btn-solid">Dashboard</a>
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-med btn-outline">Logout</button>
-            </form>
+            <!-- User menu container -->
+            <div class="user-menu">
+                <a href="{% url 'profile' %}" class="user-info">
+                    {% if user.profile.image %}
+                        <img src="{{ user.profile.image.url }}" alt="User Photo" class="avatar">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" alt="User Photo" class="avatar">
+                    {% endif %}
+                    <span class="username">{{ user.username }}</span>
+                </a>
+            
+                <form action="{% url 'logout' %}" method="post" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-med btn-outline">Logout</button>
+                </form>
+            </div>
         {% endif %}
     </nav>
 </header>
