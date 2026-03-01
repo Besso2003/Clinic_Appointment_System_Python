@@ -7,7 +7,6 @@ def home_view(request):
 
 def register_view(request):
     if request.method == 'POST':
-        # request.FILES is required because of the profile_picture
         form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
