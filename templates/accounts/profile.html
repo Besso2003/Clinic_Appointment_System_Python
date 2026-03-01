@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile - {{ user.username }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="glass-card" style="max-width:600px;margin:50px auto;text-align:center;">
+        {% if user.profile.image %}
+            <img src="{{ user.profile.image.url }}" class="avatar" style="width:100px;height:100px;">
+        {% else %}
+            <img src="{% static 'img/default-avatar.png' %}" class="avatar" style="width:100px;height:100px;">
+        {% endif %}
+        <h2>{{ user.username }}</h2>
+        <p>{{ user.email }}</p>
+    </div>
+</body>
+</html>

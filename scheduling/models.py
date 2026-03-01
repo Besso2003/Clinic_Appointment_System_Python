@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.db import models
 
 class DoctorSchedule(models.Model):
     doctor = models.ForeignKey(
-        'auth.User',  # until user model created
+        settings.AUTH_USER_MODEL,  # until user model created
         on_delete=models.CASCADE
         
         # add role (doctor) when user model created

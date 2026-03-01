@@ -1,7 +1,7 @@
 """
 URL configuration for clinic_appointment project.
 
-    he `urlpatterns` list routes URLs to views. For more information please see:
+The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
 Examples:
 Function views
@@ -18,9 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('dashboard.urls')),
-    path('accounts/', include('accounts.urls')),
+    #path('admin/', admin.site.urls),
+    path('', include('accounts.urls')),
     path('appointments/', include('appointments.urls')),
     path('scheduling/', include('scheduling.urls')),
     path('records/', include('medical_records.urls')),
