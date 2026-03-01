@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
+from scheduling.models import Slot
 
 
 class Appointment(models.Model):
@@ -29,7 +30,7 @@ class Appointment(models.Model):
     )
 
     slot = models.ForeignKey(
-        "Slot",
+        "scheduling.Slot",
         on_delete=models.CASCADE,
         related_name="appointments"
     )
