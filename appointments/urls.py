@@ -10,4 +10,8 @@ urlpatterns = [
 
     # Form to show available slots and doctors
     path("create/", views.show_create_appointment_form, name="show_create_appointment_form"),
+
+    path('generate_slots/<int:schedule_id>/', views.generate_slots_view, name='generate_slots'),
+
+    path('my-appointments/', views.list_patient_appointments, name='list_patient_appointments'),
 ]

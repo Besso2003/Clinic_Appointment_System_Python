@@ -20,3 +20,8 @@ db.sqlite3
 # Media files
 media/
 
+# Ignore all Python migration files
+**/migrations/[0-9]*_*.py
+
+# But keep the __init__.py in migrations folders
+!**/migrations/__init__.py
