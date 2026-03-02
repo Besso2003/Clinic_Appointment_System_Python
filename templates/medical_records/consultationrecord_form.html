@@ -1,32 +1,91 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Create Consultation Record</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-</head>
-<body>
-    <div class="page-container">
-        <div class="card form-card">
-            <header class="card-header">
-                <h2>Create Consultation Record</h2>
-                <p class="subtitle">Fill the form below and save the consultation record.</p>
-            </header>
+{% extends 'base.html' %}
+{% block title %}MediFlow | Create Consultation{% endblock %}
 
-            <form method="post" class="consultation-form">
+{% block content %}
+
+<!-- ================= PAGE HEADER ================= -->
+<section class="hero-section" style="padding:80px 20px 40px;">
+    <h1>Create Consultation Record</h1>
+    <p>Fill in the consultation details carefully before saving.</p>
+</section>
+
+<!-- ================= FORM SECTION ================= -->
+<section class="content-section">
+    <div class="features-grid" style="max-width:800px; margin:auto;">
+        <div class="feature-card">
+
+            <form method="post" novalidate>
                 {% csrf_token %}
-                <div class="form-grid">
-                    {{ form.as_p }}
+
+                {% if form.non_field_errors %}
+                    <div style="color:#c0392b; margin-bottom:20px;">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div style="display:flex; flex-direction:column; gap:25px;">
+
+                    <!-- Diagnosis -->
+                    <div>
+                        <label for="{{ form.diagnosis.id_for_label }}"><strong>Diagnosis</strong></label>
+                        {{ form.diagnosis }}
+                        {% if form.diagnosis.errors %}
+                            <div style="color:#c0392b; font-size:14px;">
+                                {{ form.diagnosis.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label for="{{ form.notes.id_for_label }}"><strong>Doctor Notes</strong></label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div style="color:#c0392b; font-size:14px;">
+                                {{ form.notes.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Prescription -->
+                    <div>
+                        <label for="{{ form.prescription.id_for_label }}"><strong>Prescription</strong></label>
+                        {{ form.prescription }}
+                        {% if form.prescription.errors %}
+                            <div style="color:#c0392b; font-size:14px;">
+                                {{ form.prescription.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Requested Tests -->
+                    <div>
+                        <label for="{{ form.requested_tests.id_for_label }}"><strong>Requested Tests</strong></label>
+                        {{ form.requested_tests }}
+                        {% if form.requested_tests.errors %}
+                            <div style="color:#c0392b; font-size:14px;">
+                                {{ form.requested_tests.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <a href=".." class="btn btn-secondary">Cancel</a>
+                <!-- Actions -->
+                <div style="margin-top:35px; display:flex; gap:15px;">
+                    <button type="submit" class="btn-med btn-solid">
+                        Save Consultation
+                    </button>
+
+                    <a href=".." class="btn-med btn-outline">
+                        Cancel
+                    </a>
                 </div>
+
             </form>
+
         </div>
     </div>
-</body>
-</html>
+</section>
+
+{% endblock %}

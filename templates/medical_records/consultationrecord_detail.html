@@ -1,7 +1,50 @@
-<!-- consultationrecord_detail.html -->
-<h2>Consultation Record</h2>
-<p><strong>Diagnosis:</strong> {{ record.diagnosis }}</p>
-<p><strong>Notes:</strong> {{ record.notes }}</p>
-<p><strong>Prescription:</strong> {{ record.prescription }}</p>
-<p><strong>Requested Tests:</strong> {{ record.requested_tests }}</p>
-<p><strong>Appointment Date:</strong> {{ record.appointment.date }}</p>
+{% extends 'base.html' %}
+{% block title %}MediFlow | Consultation Details{% endblock %}
+
+{% block content %}
+
+<!-- ================= PAGE HEADER ================= -->
+<section class="hero-section" style="padding:80px 20px 40px;">
+    <h1>Consultation Record</h1>
+    <p>Detailed summary of the completed medical consultation.</p>
+</section>
+
+<!-- ================= RECORD DETAILS ================= -->
+<section class="content-section">
+    <div class="features-grid" style="max-width:800px; margin:auto;">
+        <div class="feature-card">
+
+            <h3>🩺 Diagnosis</h3>
+            <p>{{ record.diagnosis }}</p>
+
+            <hr style="margin:20px 0;">
+
+            <h3>📝 Doctor Notes</h3>
+            <p>{{ record.notes|default:"No additional notes provided." }}</p>
+
+            <hr style="margin:20px 0;">
+
+            <h3>💊 Prescription</h3>
+            <p>{{ record.prescription|default:"No prescription issued." }}</p>
+
+            <hr style="margin:20px 0;">
+
+            <h3>🧪 Requested Tests</h3>
+            <p>{{ record.requested_tests|default:"No tests requested." }}</p>
+
+            <hr style="margin:20px 0;">
+
+            <h3>📅 Appointment Date</h3>
+            <p>{{ record.appointment.date|date:"F d, Y" }}</p>
+
+            <div style="margin-top:30px;">
+                <a href="{% url 'patient-medical-history' %}" class="btn-med btn-outline">
+                    Back to Medical History
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}
