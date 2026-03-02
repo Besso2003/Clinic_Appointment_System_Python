@@ -10,7 +10,6 @@ class CreateConsultationRecord(CreateView):
     model = ConsultationRecord
     template_name = 'medical_records/consultationrecord_form.html'
     fields = ['diagnosis', 'notes', 'prescription', 'requested_tests']
-    success_url = reverse_lazy("consultation-list")
 
     def form_valid(self, form):
         appointment = get_object_or_404(
@@ -19,14 +18,20 @@ class CreateConsultationRecord(CreateView):
         )
         form.instance.appointment = appointment
         return super().form_valid(form)
-
+    
+    
+    def get_success_url(self):
+        # Redirect to the detail page of the newly created record
+        return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
 
 class UpdateConsultationRecord(UpdateView):
     model = ConsultationRecord
     template_name = 'medical_records/consultationrecord_form.html'  
     fields = ['diagnosis', 'notes', 'prescription', 'requested_tests']
-    success_url = reverse_lazy("consultation-list")  
+    def get_success_url(self):
+        # Redirect to the detail page after updating
+        return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
 class ViewConsultationRecord(DetailView):
     model = ConsultationRecord

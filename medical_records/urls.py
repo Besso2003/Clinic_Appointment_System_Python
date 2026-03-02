@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import CreateConsultationRecord, UpdateConsultationRecord, ViewConsultationRecord, PatientMedicalHistory
+from .views_debug import consultation_detail_preview, patient_history_preview
 
 urlpatterns = [
     path(
@@ -21,4 +22,6 @@ urlpatterns = [
         PatientMedicalHistory.as_view(),
         name='patient-medical-history'
     ),
+    path('preview/consultation/', consultation_detail_preview, name='preview-consultation'),
+    path('preview/history/', patient_history_preview, name='preview-history'),
 ]
