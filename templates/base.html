@@ -1,12 +1,52 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Clinic System</title>
+    <meta charset="UTF-8">
+    <title>{% block title %}MediFlow{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    {% include 'navbar.html' %}
-    {% block content %}{% endblock %}
+
+<!-- ================= HEADER ================= -->
+<header class="main-header">
+    <div class="logo-text">✚ MediFlow</div>
+
+    <nav class="nav-center">
+        <a href="{% url 'home' %}#features">Features</a>
+        <a href="{% url 'home' %}#solutions">Solutions</a>
+        <a href="{% url 'home' %}#workflow">Workflow</a>
+        <a href="{% url 'home' %}#security">Security</a>
+    </nav>
+
+    <div class="nav-right">
+        {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}" class="nav-link">Login</a>
+            <a href="{% url 'register' %}" class="btn-med btn-solid">Get Started</a>
+        {% else %}
+            <div class="user-menu">
+                <a href="{% url 'profile' %}" class="nav-link">
+                    {{ user.username }}
+                </a>
+                <form action="{% url 'logout' %}" method="post" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-med btn-outline">Logout</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+</header>
+
+<!-- ================= CONTENT ================= -->
+{% block content %}
+{% endblock %}
+
+<!-- ================= FOOTER ================= -->
+<footer class="main-footer">
+    <p>© {% now "Y" %} MediFlow</p>
+    <p>Smart, Secure, Scalable Clinic Management.</p>
+</footer>
+
 </body>
 </html>

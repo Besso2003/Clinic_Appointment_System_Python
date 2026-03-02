@@ -1,16 +1,34 @@
-<!-- patient_medical_history.html -->
-<h2>Medical History</h2>
+{% extends 'base.html' %}
+{% block title %}MediFlow | Smart Clinic Management Platform{% endblock %}
 
-{% if consultations %}
-    <ul>
-    {% for record in consultations %}
-        <li>
-            <strong>Date:</strong> {{ record.appointment.created_at }} |
-            <strong>Diagnosis:</strong> {{ record.diagnosis }} |
-            <a href="{% url 'consultation-view' record.pk %}">View</a>
-        </li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No consultations found for this patient.</p>
-{% endif %}
+{% block content %}
+<section class="hero-section">
+    <h1>Medical History</h1>
+    <p>Access and review your past consultations securely.</p>
+</section>
+
+<section class="content-section">
+    {% if consultations %}
+        <div class="features-grid">
+            {% for record in consultations %}
+                <div class="feature-card">
+                    <h3>🗂 Consultation Record</h3>
+                    <p><strong>Date:</strong> {{ record.appointment.created_at|date:"F d, Y" }}</p>
+                    <p><strong>Diagnosis:</strong> {{ record.diagnosis }}</p>
+
+                    <div style="margin-top:15px;">
+                        <a href="{% url 'consultation-view' record.pk %}" class="btn-med btn-solid">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align:center; padding:40px 0;">
+            <h3>No consultations found</h3>
+            <p>Your medical history will appear here after your first completed consultation.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
