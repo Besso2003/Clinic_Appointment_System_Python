@@ -569,3 +569,57 @@ section {
 .custom-file-wrapper .browse-btn:hover {
     background-color: #2563eb;
 }
+
+
+/* Confirm button green */
+.btn-med.btn-solid.confirm {
+    background-color: #28a745; /* Bootstrap green */
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.btn-med.btn-solid.confirm:hover {
+    background-color: #218838;
+}
+
+/* Cancel button red */
+.btn-med.btn-outline.cancel {
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+}
+
+.btn-med.btn-outline.cancel:hover {
+    background-color: #e74c3c;
+    color: white;
+}
+
+
+/* Doctor status tabs */
+.edit-toggle-row a.btn-med {
+    min-width: 120px;
+    text-align: center;
+    padding: 10px 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+/* Solid (active) tab */
+.edit-toggle-row a.btn-med.btn-solid {
+    background-color: #2a7de1; /* Blue */
+    color: white;
+    border: 1px solid #2a7de1;
+}
+
+/* Outline (inactive) tab */
+.edit-toggle-row a.btn-med.btn-outline {
+    background-color: white;
+    color: #2a7de1;
+    border: 1px solid #2a7de1;
+}
+
+/* Hover effect for tabs */
+.edit-toggle-row a.btn-med.btn-outline:hover {
+    background-color: #2a7de1;
+    color: white;
+}
