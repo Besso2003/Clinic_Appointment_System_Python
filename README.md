@@ -203,7 +203,17 @@ http://127.0.0.1:8000/
 
 ## 🔐 Roles & Permissions
 
-The system uses **Django Groups**:
+The system relies on **Django Groups** plus the built-in permission framework. A management
+command (`python manage.py create_groups`) will create the four groups and give them the
+appropriate model permissions (e.g. `add_appointment`, `change_appointment`, etc.) so that
+access can be enforced declaratively.
+
+Members are added to a group automatically when they register (the registration form
+assigns the user based on the `role` field), or you can update group membership via the
+admin. Once in a group, `user.has_perm('app_label.codename')` returns `True` for all permissions
+assigned to that group.  Use Django's helpers (`@permission_required`,
+`PermissionRequiredMixin`, manual `has_perm()` calls) in your views and model clean methods to
+check for sufficent rights rather than relying on the `role` field alone.
 
 * Patient
 * Doctor

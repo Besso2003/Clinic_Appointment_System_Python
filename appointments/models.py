@@ -19,14 +19,15 @@ class Appointment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="appointments_as_patient",
-        limit_choices_to={"role": "P"}
+        # using group membership keeps logic aligned with create_groups.py
+        limit_choices_to={"groups__name": "Patient"}
     )
 
     doctor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="appointments_as_doctor",
-        limit_choices_to={"role": "D"}
+        limit_choices_to={"groups__name": "Doctor"}
     )
 
     slot = models.ForeignKey(
@@ -53,10 +54,11 @@ class Appointment(models.Model):
         ]
 
     def clean(self):
-        if self.patient.role != "P":
+        # ensure group membership rather than relying solely on role field
+        if not self.patient.groups.filter(name="Patient").exists():
             raise ValidationError("Selected user is not a patient.")
 
-        if self.doctor.role != "D":
+        if not self.doctor.groups.filter(name="Doctor").exists():
             raise ValidationError("Selected user is not a doctor.")
 
         if self.slot.doctor_schedule.doctor != self.doctor:

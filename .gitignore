@@ -17,3 +17,6 @@ db.sqlite3
 .vscode/
 .idea/
 
+# Media files
+media/
+

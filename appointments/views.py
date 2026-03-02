@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseForbidden
 from django.db import transaction
 from django.utils import timezone
@@ -12,10 +12,13 @@ from .models import Appointment, Slot
 # Read about select_for_update()
 
 @login_required
+# require the standard Django permission; groups created by create_groups.py
+# assign this codename to receptionists so has_perm() will succeed automatically
+@permission_required('appointments.change_appointment', raise_exception=True)
 @transaction.atomic
 def mark_as_no_show(request, appointment_id):
 
-    if request.user.role != "R":
+    if not request.user.groups.filter(name="Receptionist").exists():
         return HttpResponseForbidden("Only receptionist allowed.")
 
     appointment = get_object_or_404(
