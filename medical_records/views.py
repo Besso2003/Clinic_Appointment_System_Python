@@ -34,3 +34,13 @@ class ViewConsultationRecord(DetailView):
     context_object_name = 'record'
 
 
+class PatientMedicalHistory(ListView):
+    model = ConsultationRecord
+    template_name = 'medical_records/patient_medical_history.html'
+    context_object_name = 'consultations'
+
+    def get_queryset(self):
+        patient_id = self.kwargs['patient_id']
+        return ConsultationRecord.objects.filter(
+            appointment__patient__id=patient_id
+        ).order_by('-appointment__slot')
