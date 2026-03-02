@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MediFlow | Today's Appointments</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="page-wrapper">
+
+        <!-- ================= HEADER ================= -->
+        <header class="main-header">
+            <div class="logo-text">✚ MediFlow</div>
+            <nav>
+                <a href="{% url 'home' %}">Home</a>
+                {% if user.is_authenticated %}
+                <div class="user-menu">
+                    <a href="{% url 'profile' %}" class="user-info">
+                        {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="User Photo" class="avatar">
+                        {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" alt="User Photo" class="avatar">
+                        {% endif %}
+                        <span class="username">{{ user.username }}</span>
+                    </a>
+                    <form action="{% url 'logout' %}" method="post" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-med btn-outline">Logout</button>
+                    </form>
+                </div>
+                {% endif %}
+            </nav>
+        </header>
+
+        <!-- ================= TODAY'S APPOINTMENTS ================= -->
+        <main class="content-section">
+            <div class="glass-card">
+                <h2>Today's Appointments</h2>
+
+                {% if appointments %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td>{{ appointment.patient.get_full_name }}</td>
+                            <td>Dr. {{ appointment.doctor.get_full_name }}</td>
+                            <td>{{ appointment.slot.date|date:"Y-m-d" }}</td>
+                            <td>{{ appointment.slot.start_time|date:"H:i" }} - {{ appointment.slot.end_time|date:"H:i" }}</td>
+                            <td>
+                                {% if appointment.status == "REQUESTED" %}
+                                    <span class="badge">{{ appointment.status }}</span>
+                                {% else %}
+                                    <span class="badge" style="background-color: #00bfa6;">{{ appointment.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="edit-toggle-row">
+                                {% if appointment.status == "REQUESTED" %}
+                                <!-- Confirm button (green) -->
+                                <form method="post" action="{% url 'confirm_appointment' appointment.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-med btn-solid" style="background-color:#28a745;">Confirm</button>
+                                </form>
+                                <!-- Cancel button (red) -->
+                                <form method="post" action="{% url 'cancel_appointment' appointment.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-med btn-outline cancel" style="border-color:#dc3545; color:#dc3545;">Cancel</button>
+                                </form>
+                                {% else %}
+                                <span class="badge">{{ appointment.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No appointments scheduled for today.</p>
+                {% endif %}
+            </div>
+        </main>
+
+        <!-- ================= FOOTER ================= -->
+        <footer class="main-footer">
+            <p>© {% now "Y" %} MediFlow</p>
+            <p>Smart, Secure, Scalable Clinic Management.</p>
+        </footer>
+
+    </div>
+</body>
+
+</html>
