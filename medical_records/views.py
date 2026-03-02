@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, DetailView, ListView
 from .models import ConsultationRecord
 from django.urls import reverse_lazy
 from django.http import HttpResponse
@@ -27,3 +27,10 @@ class UpdateConsultationRecord(UpdateView):
     template_name = 'medical_records/consultationrecord_form.html'  
     fields = ['diagnosis', 'notes', 'prescription', 'requested_tests']
     success_url = reverse_lazy("consultation-list")  
+
+class ViewConsultationRecord(DetailView):
+    model = ConsultationRecord
+    template_name = 'medical_records/consultationrecord_detail.html'
+    context_object_name = 'record'
+
+
