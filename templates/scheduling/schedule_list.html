@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Schedules | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="logo-text">✚ MediFlow</div>
+    </header>
+
+    <section class="content-section">
+        <h2>Doctor Schedules</h2>
+
+        <div style="text-align:right; margin-bottom:20px;">
+            <a href="{% url 'schedule-create' %}" class="btn-med btn-solid">+ Add Schedule</a>
+        </div>
+
+        {% if schedules %}
+        <div class="features-grid">
+            {% for schedule in schedules %}
+            <div class="feature-card">
+                <h3>{{ schedule.doctor.username }}</h3>
+                <p><strong>Day:</strong> {{ schedule.get_day_of_week_display }}</p>
+                <p><strong>From:</strong> {{ schedule.start_time|time:"h:i A" }}</p>
+                <p><strong>To:</strong> {{ schedule.end_time|time:"h:i A" }}</p>
+                <div style="margin-top:15px;">
+                    <a href="{% url 'schedule-update' schedule.id %}" class="btn-med btn-outline">Edit</a>
+                    <a href="{% url 'schedule-delete' schedule.id %}" class="btn-med btn-solid"
+                        style="background:#dc2626;">Delete</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align:center;">No schedules available yet.</p>
+        {% endif %}
+    </section>
+
+    <footer class="main-footer">
+        <p>© {% now "Y" %} MediFlow</p>
+    </footer>
+
+</body>
+
+</html>

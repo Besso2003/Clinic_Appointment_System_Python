@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Schedule Form | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="auth-page">
+
+<div class="glass-card auth-card" style="max-width: 600px;">
+    <div class="medical-icon">📅</div>
+    <h2>Create / Update Schedule</h2>
+
+    <form method="post" class="med-form">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-group">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                    <p class="error-text">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-med btn-solid" style="width:100%; margin-top:20px;">
+            Save Schedule
+        </button>
+    </form>
+
+    <div style="text-align:center; margin-top:15px;">
+        <a href="{% url 'schedule-list' %}">Back to Schedule List</a>
+    </div>
+</div>
+
+</body>
+</html>

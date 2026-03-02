@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Schedule | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="auth-page">
+
+<div class="glass-card auth-card" style="max-width: 500px;">
+    <h2>Confirm Deletion</h2>
+
+    <p style="text-align:center;">
+        Are you sure you want to delete the schedule for
+        <strong>{{ schedule.doctor.username }}</strong>
+            on <strong>{{ schedule.get_day_of_week_display }}</strong>?
+    </p>
+
+    <form method="post" style="text-align:center; margin-top:20px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-med btn-solid" style="background:#dc2626;">
+            Yes, Delete
+        </button>
+        <a href="{% url 'schedule-list' %}" class="btn-med btn-outline">
+            Cancel
+        </a>
+    </form>
+</div>
+
+</body>
+</html>
