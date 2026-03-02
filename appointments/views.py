@@ -9,6 +9,32 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from .models import Appointment, Slot
 
+# appointments/views.py
+# from django.shortcuts import get_object_or_404, HttpResponse
+from django.contrib.auth.decorators import user_passes_test
+# from django.db import transaction
+from scheduling.models import DoctorSchedule
+from scheduling.services import generate_slots_for_schedule  # import your function
+
+
+def is_admin(user):
+    return user.is_superuser  # or you can use another permission check
+
+
+@login_required
+# @user_passes_test(is_admin)
+@transaction.atomic
+def generate_slots_view(request, schedule_id):
+    """
+    Generate slots for a given DoctorSchedule for the next 14 days.
+    Only accessible to admin users.
+    """
+    schedule = get_object_or_404(DoctorSchedule, id=schedule_id)
+    
+    generate_slots_for_schedule(schedule)
+    
+    return HttpResponse(f"Slots generated successfully for schedule {schedule.id}.")
+
 # Read about select_for_update()
 
 @login_required
@@ -114,7 +140,7 @@ def create_appointment(request, slot_id):
     slot.save()
 
 
-    return HttpResponse("list_patient_appointments")
+    return redirect('list_patient_appointments')
 
 
 def prevent_double_booking(slot):

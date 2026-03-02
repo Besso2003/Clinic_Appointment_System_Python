@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediFlow | My Appointments</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- ================= HEADER ================= -->
+    <header class="main-header">
+        <div class="logo-text">✚ MediFlow</div>
+        <nav>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#features">Features</a>
+            <a href="#solutions">Solutions</a>
+            {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}" class="nav-link">Login</a>
+                <a href="{% url 'register' %}" class="btn-med btn-solid">Get Started</a>
+            {% else %}
+                <div class="user-menu">
+                    <a href="{% url 'profile' %}" class="user-info">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="User Photo" class="avatar">
+                        {% else %}
+                            <img src="{% static 'img/default-avatar.png' %}" alt="User Photo" class="avatar">
+                        {% endif %}
+                        <span class="username">{{ user.username }}</span>
+                    </a>
+                    <form action="{% url 'logout' %}" method="post" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-med btn-outline">Logout</button>
+                    </form>
+                </div>
+            {% endif %}
+        </nav>
+    </header>
+
+    <!-- ================= APPOINTMENT LIST ================= -->
+    <main class="content-section">
+        <div class="glass-card">
+            <h2>My Appointments</h2>
+
+            <div class="appointment-table-wrapper">
+                {% if appointments %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in appointments %}
+                            <tr>
+                                <td>Dr. {{ appt.doctor.get_full_name }}</td>
+                                <td>{{ appt.slot.date|date:"Y-m-d" }}</td>
+                                <td>{{ appt.slot.start_time|time:"H:i" }} - {{ appt.slot.end_time|time:"H:i" }}</td>
+                                <td>
+                                    <span class="badge {% if appt.status == 'CANCELLED' %}cancel{% endif %}">
+                                        {{ appt.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="no-slots">You have no appointments yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="main-footer">
+        <p>© {% now "Y" %} MediFlow</p>
+        <p>Smart, Secure, Scalable Clinic Management.</p>
+    </footer>
+
+</div>
+</body>
+</html>
