@@ -1,7 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from accounts.forms import UserRegistrationForm
 
 User = get_user_model()
+
 
 class Command(BaseCommand):
     help = "Seed database with initial users"
@@ -72,11 +74,36 @@ class Command(BaseCommand):
         ]
 
         for user_data in users:
+            # use the registration form so password handling and validation are centralized
             password = user_data.pop("password")
-            user = User.objects.create(**user_data)
-            user.set_password(password)
-            user.save()
 
-            self.stdout.write(self.style.SUCCESS(f"Created user: {user.username}"))
+            form_data = {
+                'username': user_data.get('username'),
+                'first_name': user_data.get('first_name'),
+                'last_name': user_data.get('last_name'),
+                'email': user_data.get('email'),
+                'role': user_data.get('role'),
+                'password1': password,
+                'password2': password,
+            }
+
+            form = UserRegistrationForm(form_data)
+            if form.is_valid():
+                # save user and let the form attach the proper group
+                user = form.save()
+
+                # apply optional flags that aren't exposed on the form
+                if 'is_staff' in user_data:
+                    user.is_staff = user_data.get('is_staff')
+                if 'is_superuser' in user_data:
+                    user.is_superuser = user_data.get('is_superuser')
+                user.save()
+
+                # report created user and primary group (if any)
+                group_names = list(user.groups.values_list('name', flat=True))
+                primary_group = group_names[0] if group_names else None
+                self.stdout.write(self.style.SUCCESS(f"Created user: {user.username} (group: {primary_group})"))
+            else:
+                self.stdout.write(self.style.ERROR(f"Failed to create {user_data.get('username')}: {form.errors}"))
 
         self.stdout.write(self.style.SUCCESS("Seeding completed!"))
