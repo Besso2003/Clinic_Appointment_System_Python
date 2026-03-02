@@ -1,0 +1,16 @@
+<!-- patient_medical_history.html -->
+<h2>Medical History</h2>
+
+{% if consultations %}
+    <ul>
+    {% for record in consultations %}
+        <li>
+            <strong>Date:</strong> {{ record.appointment.created_at }} |
+            <strong>Diagnosis:</strong> {{ record.diagnosis }} |
+            <a href="{% url 'consultation-view' record.pk %}">View</a>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No consultations found for this patient.</p>
+{% endif %}
