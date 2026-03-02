@@ -112,7 +112,6 @@ def show_create_appointment_form(request):
     return render(request, "appointments/create_appointment.html", context)
 
 
-
 @login_required
 @transaction.atomic
 def create_appointment(request, slot_id):
@@ -158,8 +157,8 @@ def cancel_appointment(request, appointment_id):
 
     if request.user.role == "P" and appointment.patient != request.user:
         return HttpResponseForbidden("You can only cancel your own appointments.")
-    elif request.user.role not in ["P", "R"]:
-        return HttpResponseForbidden("Only patients or receptionists can cancel appointments.")
+    elif request.user.role not in ["P", "R", "D"]:
+        return HttpResponseForbidden("Only patients, receptionists, or doctors can cancel appointments.")
 
     if appointment.status not in ["REQUESTED", "CONFIRMED"]:
         return HttpResponseForbidden("Appointment cannot be cancelled at this stage.")
@@ -210,8 +209,8 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
 @login_required
 def confirm_appointment(request, appointment_id):
 
-    if request.user.role != "R":
-        return HttpResponseForbidden("Only receptionist can confirm.")
+    if request.user.role not in ["R", "D"]:
+        return HttpResponseForbidden("Only receptionist or doctor can confirm.")
 
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
@@ -221,7 +220,8 @@ def confirm_appointment(request, appointment_id):
     appointment.status = "CONFIRMED"
     appointment.save()
 
-    return redirect("list_today_appointments")
+    # return redirect("list_today_appointments")
+    return HttpResponse("Appointment confirmed successfully.")
 
 @login_required
 def mark_as_checked_in(request, appointment_id):
@@ -268,15 +268,15 @@ def list_patient_appointments(request):
         "appointments": appointments
     })
 
-
 @login_required
 def list_doctor_appointments(request):
-
     if request.user.role != "D":
         return HttpResponseForbidden("Only doctors allowed.")
 
+    status_filter = request.GET.get("status", "REQUESTED")  # default to REQUESTED
     appointments = Appointment.objects.filter(
-        doctor=request.user
+        doctor=request.user,
+        status=status_filter
     ).select_related("patient", "slot")
 
     return render(request, "appointments/doctor_list.html", {
