@@ -39,7 +39,7 @@ def staff_register_view(request):
     
     return render(request, 'accounts/register.html', {'form': form})
 
-@login_required
+# @login_required
 def patient_register_view(request):
     if request.method == 'POST':
         form = PatientRegistrationForm(request.POST, request.FILES)
