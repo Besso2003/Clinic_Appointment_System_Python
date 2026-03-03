@@ -185,7 +185,12 @@ def cancel_appointment(request, appointment_id):
 
     # appointment.delete()
 
-    return redirect('doctor')
+    if request.user.role == "P":
+        return redirect('patient')
+    elif request.user.role == "R":
+        return redirect('list_today_appointments')
+    elif request.user.role == "D":
+        return redirect('doctor')
 
 ## done
 @login_required
@@ -243,7 +248,12 @@ def confirm_appointment(request, appointment_id):
     appointment.save()
 
     # return redirect("list_today_appointments")
-    return redirect('doctor')
+    if request.user.role == "P":
+        return redirect('patient')
+    elif request.user.role == "R":
+        return redirect('list_today_appointments')
+    elif request.user.role == "D":
+        return redirect('doctor')
 
 ## NOT YET
 @login_required
