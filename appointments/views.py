@@ -87,6 +87,7 @@ def mark_as_completed(request, appointment_id):
 
     return HttpResponse("Appointment marked as completed successfully.")
 
+## done
 @login_required
 def show_create_appointment_form(request):
     if request.user.role != "P":
@@ -111,7 +112,7 @@ def show_create_appointment_form(request):
     }
     return render(request, "appointments/create_appointment.html", context)
 
-
+## done
 @login_required
 @transaction.atomic
 def create_appointment(request, slot_id):
@@ -146,6 +147,7 @@ def prevent_double_booking(slot):
     if not slot.is_available:
         raise ValidationError("Slot already booked.")
     
+## done
 @login_required
 @transaction.atomic
 def cancel_appointment(request, appointment_id):
@@ -206,6 +208,7 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
 
     return redirect("list_patient_appointments")
 
+## done
 @login_required
 def confirm_appointment(request, appointment_id):
 
@@ -253,7 +256,7 @@ def mark_as_checked_in(request, appointment_id):
 
     return redirect("list_today_appointments")
 
-
+## done
 @login_required
 def list_patient_appointments(request):
 
@@ -268,6 +271,7 @@ def list_patient_appointments(request):
         "appointments": appointments
     })
 
+## done
 @login_required
 def list_doctor_appointments(request):
     if request.user.role != "D":
@@ -285,17 +289,17 @@ def list_doctor_appointments(request):
 
 @login_required
 def list_today_appointments(request):
-
     if request.user.role != "R":
         return HttpResponseForbidden("Only receptionist allowed.")
 
     today = timezone.now().date()
+    weekday_number = today.weekday()
 
     appointments = Appointment.objects.filter(
-        slot__doctor_schedule__day_of_week=today.strftime("%A")
+        slot__doctor_schedule__day_of_week=weekday_number
     ).select_related("patient", "doctor", "slot")
 
-    return render(request, "appointments/today_list.html", {
+    return render(request, "appointments/receptionist_list_appointments.html", {
         "appointments": appointments
     })
 
