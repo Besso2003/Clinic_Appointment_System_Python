@@ -243,7 +243,7 @@ def confirm_appointment(request, appointment_id):
     appointment.save()
 
     # return redirect("list_today_appointments")
-    return HttpResponse("Appointment confirmed successfully.")
+    return redirect('doctor')
 
 ## NOT YET
 @login_required
