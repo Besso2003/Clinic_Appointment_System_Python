@@ -185,7 +185,7 @@ def cancel_appointment(request, appointment_id):
 
     # appointment.delete()
 
-    return HttpResponse("Appointment cancelled successfully.")
+    return redirect('doctor')
 
 ## done
 @login_required
