@@ -298,3 +298,24 @@ def list_today_appointments(request):
     return render(request, "appointments/today_list.html", {
         "appointments": appointments
     })
+
+
+
+@login_required
+def show_reschedule_form(request, appointment_id):
+
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        patient=request.user
+    )
+
+    available_slots = Slot.objects.filter(
+        is_available=True,
+        doctor_schedule__doctor=appointment.doctor
+    ).select_related("doctor_schedule")
+
+    return render(request, "appointments/reschedule.html", {
+        "appointment": appointment,
+        "slots": available_slots
+    })
