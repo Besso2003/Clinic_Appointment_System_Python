@@ -1,11 +1,32 @@
 from django.shortcuts import render, redirect
 from .forms import UserRegistrationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
 from django.contrib import messages
+from django.contrib.auth.views import LoginView
+from django.urls import reverse_lazy
 # Create your views here.
 
 def home_view(request):
     return render(request, 'accounts/home.html')
+
+
+class login_view(LoginView):
+    template_name = 'accounts/login.html'
+    
+    def get_success_url(self):
+        user = self.request.user
+
+        if user.role == 'A':
+            return reverse_lazy('admin')
+        elif user.role == 'D':  
+            return reverse_lazy('doctor')
+        elif user.role == 'R': 
+            return reverse_lazy('receptionist')
+        elif user.role == 'P':
+            return reverse_lazy('patient')
+        else:
+            return reverse_lazy('home')
 
 
 def register_view(request):
