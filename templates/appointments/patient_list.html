@@ -7,6 +7,18 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Colored Reschedule Button */
+        .reschedule-btn {
+            border-color: #28a745;
+            color: #28a745;
+            transition: all 0.3s;
+        }
+        .reschedule-btn:hover {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 <div class="page-wrapper">
@@ -54,6 +66,7 @@
                                 <th>Date</th>
                                 <th>Time</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,6 +79,20 @@
                                     <span class="badge {% if appt.status == 'CANCELLED' %}cancel{% endif %}">
                                         {{ appt.get_status_display }}
                                     </span>
+                                </td>
+                                <td>
+                                    {% if appt.status == "REQUESTED" or appt.status == "CONFIRMED" %}
+                                        <a href="{% url 'show_reschedule_form' appt.id %}" class="btn-med btn-outline reschedule-btn">
+                                            Reschedule
+                                        </a>
+
+                                        <form method="POST" action="{% url 'cancel_appointment' appt.id %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-med btn-outline cancel">Cancel</button>
+                                        </form>
+                                    {% else %}
+                                        <span style="color: var(--muted); font-size: 14px">—</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

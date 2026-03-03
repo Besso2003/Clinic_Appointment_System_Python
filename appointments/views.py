@@ -100,6 +100,9 @@ def show_create_appointment_form(request):
     if doctor_id:
         slots = slots.filter(doctor_schedule__doctor_id=doctor_id)
 
+    slots = slots.order_by("date", "start_time") 
+
+
     # Get all doctors for dropdown
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -142,10 +145,17 @@ def create_appointment(request, slot_id):
 
     return redirect('list_patient_appointments')
 
-
 def prevent_double_booking(slot):
-    if not slot.is_available:
+    if Appointment.objects.filter(slot=slot, status__in=["REQUESTED", "CONFIRMED", "CHECKED_IN"]).exists():
         raise ValidationError("Slot already booked.")
+
+
+# def prevent_double_booking(slot):
+
+#         if Appointment.objects.filter(slot=slot).exclude(status="CANCELLED").exists():
+#          raise ValidationError("Slot already booked.")
+    # if not slot.is_available:
+    #     raise ValidationError("Slot already booked.")
     
 ## done
 @login_required
@@ -172,6 +182,8 @@ def cancel_appointment(request, appointment_id):
     appointment.slot.is_available = True
     appointment.slot.save()
 
+    # appointment.delete()
+
     return HttpResponse("Appointment cancelled successfully.")
 
 
@@ -186,6 +198,9 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
 
     if request.user != appointment.patient:
         return HttpResponseForbidden("You cannot reschedule this appointment.")
+    
+    if appointment.status not in ["REQUESTED", "CONFIRMED"]:
+        return HttpResponseForbidden("This appointment cannot be rescheduled.")
 
     new_slot = get_object_or_404(
         Slot.objects.select_for_update(),
@@ -193,6 +208,9 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
     )
 
     prevent_double_booking(new_slot)
+
+    if new_slot.doctor_schedule.doctor != appointment.doctor:
+        return HttpResponseForbidden("Invalid slot selection.")
 
     old_slot = appointment.slot
     old_slot.is_available = True
@@ -301,4 +319,25 @@ def list_today_appointments(request):
 
     return render(request, "appointments/receptionist_list_appointments.html", {
         "appointments": appointments
+    })
+
+
+
+@login_required
+def show_reschedule_form(request, appointment_id):
+
+    appointment = get_object_or_404(
+        Appointment,
+        id=appointment_id,
+        patient=request.user
+    )
+
+    available_slots = Slot.objects.filter(
+        is_available=True,
+        doctor_schedule__doctor=appointment.doctor
+    ).select_related("doctor_schedule").order_by("date", "start_time")
+
+    return render(request, "appointments/reschedule.html", {
+        "appointment": appointment,
+        "slots": available_slots
     })
