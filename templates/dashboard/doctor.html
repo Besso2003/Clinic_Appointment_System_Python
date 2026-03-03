@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
 </head>
 <body>
     <div class="container">
@@ -22,7 +22,12 @@
                     <li><a href="#">Patients</a></li>
                     <li><a href="#">Schedule</a></li>
                     <li><a href="#">Profile</a></li>
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn-link">Logout</button>
+                        </form>
+                    </li>
                 </ul>
             </nav>
         </aside>
