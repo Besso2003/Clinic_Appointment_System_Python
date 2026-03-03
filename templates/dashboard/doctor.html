@@ -1,12 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
 </head>
+
 <body>
     <div class="container">
         <!-- Sidebar Navigation -->
@@ -17,8 +19,7 @@
             <nav class="nav-menu">
                 <ul>
                     <li><a href="{% url 'doctor' %}" class="active">Dashboard</a></li>
-                    <!-- TODO: implement other views and update names below -->
-                    <li><a href="#">My Appointments</a></li>
+                    <li><a href="{% url 'doctor' %}">My Appointments</a></li>
                     <li><a href="#">Patients</a></li>
                     <li><a href="#">Schedule</a></li>
                     <li><a href="{% url 'profile' %}">Profile</a></li>
@@ -77,11 +78,27 @@
                         <tbody>
                             {% for appointment in appointments %}
                             <tr>
-                                <td>{{ appointment.patient.user.first_name }} {{ appointment.patient.user.last_name }}</td>
-                                <td>{{ appointment.appointment_datetime }}</td>
-                                <td><span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span></td>
+                                <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
+                                <td>{{ appointment.slot.date|date:"D, d M Y" }} {{ appointment.slot.start_time|time:"H:i" }}</td>
                                 <td>
-                                    <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-small">View</a>
+                                    <span class="badge badge-{{ appointment.status|lower }}">
+                                        {{ appointment.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if appointment.status == "REQUESTED" %}
+                                    <form action="{% url 'confirm_appointment' appointment.id %}" method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-small btn-success">Confirm</button>
+                                    </form>
+                                    {% endif %}
+
+                                    {% if appointment.status == "REQUESTED" or appointment.status == "CONFIRMED" %}
+                                    <form action="{% url 'cancel_appointment' appointment.id %}" method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-small btn-danger">Cancel</button>
+                                    </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
@@ -96,4 +113,5 @@
         </main>
     </div>
 </body>
+
 </html>
