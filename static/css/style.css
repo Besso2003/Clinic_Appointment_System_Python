@@ -275,12 +275,13 @@ a {
 .auth-page {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Changed from center to flex-start */
     min-height: 100vh;
     background: linear-gradient(135deg, #2a7de1, #00bfa6);
-    padding: 20px;
+    background-attachment: fixed;
+    padding: 40px 20px; /* Added more padding to the top and bottom */
+    overflow-y: auto;   /* Ensures scrolling is enabled */
 }
-
 /* ================= GLASS CARD ================= */
 .glass-card {
     background: rgba(255, 255, 255, 0.9);

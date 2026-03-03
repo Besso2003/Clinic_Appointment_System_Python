@@ -4,43 +4,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>Patient Dashboard | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
+    <style>
+        /* Specific fix to override the sidebar container's flex behavior */
+        .patient-page-container {
+            display: block; /* Removes flex that causes sidebar gaps */
+            min-height: 100vh;
+            background-color: var(--bg);
+        }
+        /* Ensure the main area doesn't have the 270px margin */
+        .patient-dashboard {
+            margin-left: 0 !important; 
+            padding: 40px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        /* Match the profile card to the registration glass-style */
+        .profile-card-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 30px;
+            border-radius: var(--radius-md);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <div class="patient-page-container">
         <header class="navbar">
-            <h1>Clinic Appointment System</h1>
+            <div class="logo">
+                <h2 style="color: white; margin-bottom: 0;">MediFlow</h2>
+            </div>
             <nav>
                 <ul>
-                    <li><a href="{% url 'patient' %}">Dashboard</a></li>
+                    <li><a href="{% url 'patient' %}" class="active">Dashboard</a></li>
                     <li><a href="#">Book Appointment</a></li>
-                    <li><a href="#">My Appointments</a></li>
-                    <li><a href="#">Logout</a></li>
+                    <li><a href="#">My History</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn-link">Logout</button>
+                        </form>
+                    </li>
                 </ul>
             </nav>
         </header>
 
         <main class="patient-dashboard">
-            <section class="patient-profile">
-                <h2>Welcome, {{ user.first_name }}</h2>
-                <div class="profile-card">
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Phone:</strong> {{ patient.phone }}</p>
-                    <p><strong>Date of Birth:</strong> {{ patient.date_of_birth }}</p>
-                </div>
+            <section class="profile-card-header">
+                <h1>Welcome back, {{ user.first_name }}!</h1>
+                <p style="opacity: 0.9;">Manage your health and upcoming consultations below.</p>
             </section>
 
-            <section class="upcoming-appointments">
-                <h3>Upcoming Appointments</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Account Email</h3>
+                    <p class="stat-number" style="font-size: 18px;">{{ user.email }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Phone Number</h3>
+                    <p class="stat-number" style="font-size: 18px;">{{ patient.phone|default:"Not Provided" }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Next Appointment</h3>
+                    <p class="stat-number" style="font-size: 18px;">
+                        {% if appointments %}{{ appointments.0.date }}{% else %}None{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <section class="card">
+                <div class="header-content" style="margin-bottom: 20px;">
+                    <h2>Upcoming Appointments</h2>
+                    <a href="#" class="btn btn-primary">+ New Booking</a>
+                </div>
+
                 {% if appointments %}
                     <table class="appointments-table">
                         <thead>
                             <tr>
                                 <th>Doctor</th>
                                 <th>Specialty</th>
-                                <th>Date</th>
-                                <th>Time</th>
+                                <th>Date & Time</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -48,26 +95,22 @@
                         <tbody>
                             {% for appointment in appointments %}
                                 <tr>
-                                    <td>{{ appointment.doctor.user.first_name }} {{ appointment.doctor.user.last_name }}</td>
+                                    <td><strong>Dr. {{ appointment.doctor.user.last_name }}</strong></td>
                                     <td>{{ appointment.doctor.specialty }}</td>
-                                    <td>{{ appointment.date|date:"Y-m-d" }}</td>
-                                    <td>{{ appointment.time|time:"H:i" }}</td>
-                                    <td><span class="status {{ appointment.status }}">{{ appointment.status }}</span></td>
+                                    <td>{{ appointment.date|date:"M d, Y" }} at {{ appointment.time|time:"H:i" }}</td>
+                                    <td><span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span></td>
                                     <td>
-                                        <a href="{% url 'cancel_appointment' appointment.id %}" class="btn btn-danger">Cancel</a>
+                                        <a href="{% url 'cancel_appointment' appointment.id %}" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">Cancel</a>
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 {% else %}
-                    <p class="no-data">No upcoming appointments</p>
+                    <div style="text-align: center; padding: 40px;">
+                        <p class="text-muted">You have no upcoming appointments scheduled.</p>
+                    </div>
                 {% endif %}
-            </section>
-
-            <section class="book-appointment">
-                <h3>Book New Appointment</h3>
-                <a href="#" class="btn btn-primary">Schedule Appointment</a>
             </section>
         </main>
     </div>

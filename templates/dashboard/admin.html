@@ -4,84 +4,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>Admin Dashboard | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
 </head>
 <body>
     <div class="container">
-        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo">
                 <h2>Clinic System</h2>
             </div>
             <nav class="nav-menu">
                 <ul>
-                    <li><a href="{% url 'doctor' %}" class="active">Dashboard</a></li>
-                    <!-- TODO: implement other views and update names below -->
-                    <li><a href="#">My Appointments</a></li>
-                    <li><a href="#">Patients</a></li>
-                    <li><a href="#">Schedule</a></li>
-                    <li><a href="#">Profile</a></li>
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                    <li><a href="{% url 'admin' %}" class="active">System Overview</a></li>
+                    <li><a href="#">Manage Staff</a></li>
+                    <li><a href="#">Manage Patients</a></li>
+                    <li><a href="#">Clinic Analytics</a></li>
+                    <li><a href="#">Settings</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn-link">Logout</button>
+                        </form>
+                    </li>
                 </ul>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="header">
                 <div class="header-content">
-                    <h1>Welcome, Dr. {{ user.first_name }} {{ user.last_name }}</h1>
+                    <h1>Administrator Control Panel</h1>
                     <div class="user-info">
                         <span>{{ user.email }}</span>
                     </div>
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
             <section class="content">
-                <!-- Stats Cards -->
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <h3>Today's Appointments</h3>
-                        <p class="stat-number">{{ todays_appointments }}</p>
+                        <h3>Total Staff Members</h3>
+                        <p class="stat-number">{{ total_staff }}</p>
                     </div>
                     <div class="stat-card">
-                        <h3>Total Patients</h3>
+                        <h3>Total Active Patients</h3>
                         <p class="stat-number">{{ total_patients }}</p>
                     </div>
                     <div class="stat-card">
-                        <h3>Pending Appointments</h3>
-                        <p class="stat-number">{{ pending_appointments }}</p>
+                        <h3>Today's Revenue</h3>
+                        <p class="stat-number">{{ daily_revenue }}</p>
                     </div>
                 </div>
 
-                <!-- Upcoming Appointments -->
                 <div class="card">
-                    <h2>Upcoming Appointments</h2>
+                    <h2>Recent Staff Activity</h2>
                     <table class="appointments-table">
                         <thead>
                             <tr>
-                                <th>Patient Name</th>
-                                <th>Date & Time</th>
-                                <th>Status</th>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Last Login</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for appointment in appointments %}
+                            {% for staff in recent_staff %}
                             <tr>
-                                <td>{{ appointment.patient.user.first_name }} {{ appointment.patient.user.last_name }}</td>
-                                <td>{{ appointment.appointment_datetime }}</td>
-                                <td><span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span></td>
+                                <td>{{ staff.first_name }} {{ staff.last_name }}</td>
+                                <td><span class="badge badge-confirmed">{{ staff.get_role_display }}</span></td>
+                                <td>{{ staff.last_login|date:"M d, H:i" }}</td>
                                 <td>
-                                    <a href="{% url 'appointment_detail' appointment.id %}" class="btn btn-small">View</a>
+                                    <a href="#" class="btn btn-small">Edit Permissions</a>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4">No appointments scheduled</td>
+                                <td colspan="4">No staff activity recorded.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

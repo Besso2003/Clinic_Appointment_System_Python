@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+# AbstractUser default fields: username, password, email, first_name, last_name, is_staff, and is_active.
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('P', 'Patient'),
