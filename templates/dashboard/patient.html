@@ -34,22 +34,31 @@
 <body>
     <div class="patient-page-container">
         <header class="navbar">
-            <div class="logo">
-                <h2 style="color: white; margin-bottom: 0;">MediFlow</h2>
+            <div class="nav-left">
+                <h2 class="logo-text">MediFlow</h2>
             </div>
-            <nav>
-                <ul>
-                    <li><a href="{% url 'patient' %}" class="active">Dashboard</a></li>
-                    <li><a href="#">Book Appointment</a></li>
-                    <li><a href="#">My History</a></li>
-                    <li>
-                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="logout-btn-link">Logout</button>
-                        </form>
-                    </li>
-                </ul>
+        
+            <nav class="nav-center">
+                <a href="{% url 'patient' %}" class="nav-link active">Dashboard</a>
+                <a href="#" class="nav-link">Book Appointment</a>
+                <a href="#" class="nav-link">My History</a>
             </nav>
+        
+            <div class="nav-right">
+                <a href="{% url 'profile' %}" class="user-profile">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="avatar">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" class="avatar">
+                    {% endif %}
+                    <span>{{ user.username }}</span>
+                </a>
+            
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
         </header>
 
         <main class="patient-dashboard">

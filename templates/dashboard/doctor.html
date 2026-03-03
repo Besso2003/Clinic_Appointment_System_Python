@@ -21,7 +21,7 @@
                     <li><a href="#">My Appointments</a></li>
                     <li><a href="#">Patients</a></li>
                     <li><a href="#">Schedule</a></li>
-                    <li><a href="#">Profile</a></li>
+                    <li><a href="{% url 'profile' %}">Profile</a></li>
                     <li>
                         <form action="{% url 'logout' %}" method="post" style="display: inline;">
                             {% csrf_token %}
