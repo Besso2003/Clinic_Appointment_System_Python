@@ -623,3 +623,15 @@ section {
     background-color: #2a7de1;
     color: white;
 }
+
+/* Color the reschedule button */
+.reschedule-btn {
+    border-color: #28a745; /* green border */
+    color: #28a745;        /* green text */
+    transition: all 0.3s;
+}
+
+.reschedule-btn:hover {
+    background-color: #28a745;
+    color: white;
+}

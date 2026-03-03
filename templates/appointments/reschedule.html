@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediFlow | Reschedule Appointment</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- ================= HEADER ================= -->
+    <header class="main-header">
+        <div class="logo-text">✚ MediFlow</div>
+        <nav>
+            <a href="{% url 'home' %}">Home</a>
+
+            {% if user.is_authenticated %}
+                <div class="user-menu">
+                    <a href="{% url 'profile' %}" class="user-info">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" class="avatar">
+                        {% else %}
+                            <img src="{% static 'img/default-avatar.png' %}" class="avatar">
+                        {% endif %}
+                        <span class="username">{{ user.username }}</span>
+                    </a>
+                    <form action="{% url 'logout' %}" method="post" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-med btn-outline">Logout</button>
+                    </form>
+                </div>
+            {% endif %}
+        </nav>
+    </header>
+
+    <!-- ================= CONTENT ================= -->
+    <main class="content-section">
+        <div class="glass-card">
+
+            <h2>Reschedule Appointment</h2>
+
+            <!-- Current Appointment Info -->
+            <div class="feature-card" style="margin-bottom: 30px;">
+                <h3>Current Appointment</h3>
+                <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
+                <p><strong>Date:</strong> {{ appointment.slot.date|date:"Y-m-d" }}</p>
+                <p><strong>Time:</strong>
+                    {{ appointment.slot.start_time|time:"H:i" }} -
+                    {{ appointment.slot.end_time|time:"H:i" }}
+                </p>
+                <p>
+                    <span class="badge">
+                        {{ appointment.get_status_display }}
+                    </span>
+                </p>
+            </div>
+
+            <!-- Available Slots -->
+            <h3 style="margin-bottom: 15px;">Choose New Slot</h3>
+
+            {% if slots %}
+                <div class="appointment-table-wrapper">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for slot in slots %}
+                            <tr>
+                                <td>{{ slot.date|date:"Y-m-d" }}</td>
+                                <td>
+                                    {{ slot.start_time|time:"H:i" }} -
+                                    {{ slot.end_time|time:"H:i" }}
+                                </td>
+                                <td>
+                                    <form method="POST"
+                                          action="{% url 'reschedule_appointment' appointment.id slot.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn-med btn-solid confirm">
+                                            Select
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="no-slots">No available slots for this doctor.</p>
+            {% endif %}
+
+            <!-- Back Button -->
+            <div style="margin-top: 25px; text-align: center;">
+                <a href="{% url 'list_patient_appointments' %}"
+                   class="btn-med btn-outline cancel">
+                    Cancel & Go Back
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="main-footer">
+        <p>© {% now "Y" %} MediFlow</p>
+        <p>Smart, Secure, Scalable Clinic Management.</p>
+    </footer>
+
+</div>
+</body>
+</html>
