@@ -10,9 +10,28 @@ from appointments.views import list_patient_appointments
 def admin_dashboard(request):
 	return render(request, 'dashboard/admin.html')
 
+from django.utils import timezone
+
 @login_required
 def doctor_dashboard(request):
-	return render(request, 'dashboard/doctor.html')
+
+    if request.user.role != "D":
+        return HttpResponseForbidden("Only doctors allowed.")
+
+    appointments = Appointment.objects.filter(
+        doctor=request.user
+    ).select_related("patient", "slot")
+
+    context = {
+        "appointments": appointments,
+        "todays_appointments": appointments.filter(
+            slot__date=timezone.now().date()
+        ).count(),
+        "total_patients": appointments.values("patient").distinct().count(),
+        "pending_appointments": appointments.filter(status="REQUESTED").count(),
+    }
+
+    return render(request, "dashboard/doctor.html", context)
 
 @login_required
 def receptionist_dashboard(request):
