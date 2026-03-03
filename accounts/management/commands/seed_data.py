@@ -18,7 +18,7 @@ class Command(BaseCommand):
             {
                 "username": "admin",
                 "email": "admin@mediflow.com",
-                "password": "Admin123!",
+                "password": "Maher123!",
                 "role": "A",
                 "first_name": "Admin",
                 "last_name": "User",

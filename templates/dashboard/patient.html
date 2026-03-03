@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header class="navbar">
+            <h1>Clinic Appointment System</h1>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'patient' %}">Dashboard</a></li>
+                    <li><a href="#">Book Appointment</a></li>
+                    <li><a href="#">My Appointments</a></li>
+                    <li><a href="#">Logout</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="patient-dashboard">
+            <section class="patient-profile">
+                <h2>Welcome, {{ user.first_name }}</h2>
+                <div class="profile-card">
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Phone:</strong> {{ patient.phone }}</p>
+                    <p><strong>Date of Birth:</strong> {{ patient.date_of_birth }}</p>
+                </div>
+            </section>
+
+            <section class="upcoming-appointments">
+                <h3>Upcoming Appointments</h3>
+                {% if appointments %}
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Specialty</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                                <tr>
+                                    <td>{{ appointment.doctor.user.first_name }} {{ appointment.doctor.user.last_name }}</td>
+                                    <td>{{ appointment.doctor.specialty }}</td>
+                                    <td>{{ appointment.date|date:"Y-m-d" }}</td>
+                                    <td>{{ appointment.time|time:"H:i" }}</td>
+                                    <td><span class="status {{ appointment.status }}">{{ appointment.status }}</span></td>
+                                    <td>
+                                        <a href="{% url 'cancel_appointment' appointment.id %}" class="btn btn-danger">Cancel</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="no-data">No upcoming appointments</p>
+                {% endif %}
+            </section>
+
+            <section class="book-appointment">
+                <h3>Book New Appointment</h3>
+                <a href="#" class="btn btn-primary">Schedule Appointment</a>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
