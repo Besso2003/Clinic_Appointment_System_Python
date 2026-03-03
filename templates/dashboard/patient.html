@@ -88,7 +88,7 @@
           <div class="stat-card">
             <h3>Next Appointment</h3>
             <p class="stat-number" style="font-size: 18px">
-              {% if appointments %}{{ appointments.0.date }}{% else %}None{%endif %}
+              {% if appointments %}{{ appointments.0.slot.date|date:"M d, Y" }}{% else %}None{% endif %}
             </p>
           </div>
         </div>
@@ -119,17 +119,16 @@
                   {{ appointment.slot.date|date:"M d, Y" }} at {{ appointment.slot.start_time|time:"H:i" }}
                 </td>
                 <td>
-                  <span class="badge badge-{{ appointment.status|lower }}"
-                    >{{ appointment.status }}</span
-                  >
+                  <span class="badge badge-{{ appointment.status|lower }}">{{ appointment.status }}</span>
                 </td>
                 <td>
+                  {% if appointment.status != "CANCELLED" %}
                   <a
                     href="{% url 'cancel_appointment' appointment.id %}"
                     class="btn btn-danger"
                     style="padding: 5px 10px; font-size: 12px"
-                    >Cancel</a
-                  >
+                  >Cancel</a>
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
