@@ -186,6 +186,7 @@ def cancel_appointment(request, appointment_id):
 
     return HttpResponse("Appointment cancelled successfully.")
 
+# Done
 
 @login_required
 @transaction.atomic
@@ -305,6 +306,7 @@ def list_doctor_appointments(request):
         "appointments": appointments
     })
 
+# Done
 @login_required
 def list_today_appointments(request):
     if request.user.role != "R":
@@ -322,6 +324,7 @@ def list_today_appointments(request):
     })
 
 
+## Done
 
 @login_required
 def show_reschedule_form(request, appointment_id):
