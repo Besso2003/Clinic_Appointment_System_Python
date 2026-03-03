@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Clinic System</h2>
+            </div>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="{% url 'admin' %}" class="active">System Overview</a></li>
+                    <li><a href="#">Manage Staff</a></li>
+                    <li><a href="#">Manage Patients</a></li>
+                    <li><a href="#">Clinic Analytics</a></li>
+                    <li><a href="#">Settings</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn-link">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-content">
+                    <h1>Administrator Control Panel</h1>
+                    <div class="user-info">
+                        <span>{{ user.email }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <section class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Staff Members</h3>
+                        <p class="stat-number">{{ total_staff }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Active Patients</h3>
+                        <p class="stat-number">{{ total_patients }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Today's Revenue</h3>
+                        <p class="stat-number">{{ daily_revenue }}</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Recent Staff Activity</h2>
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Last Login</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for staff in recent_staff %}
+                            <tr>
+                                <td>{{ staff.first_name }} {{ staff.last_name }}</td>
+                                <td><span class="badge badge-confirmed">{{ staff.get_role_display }}</span></td>
+                                <td>{{ staff.last_login|date:"M d, H:i" }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-small">Edit Permissions</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">No staff activity recorded.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

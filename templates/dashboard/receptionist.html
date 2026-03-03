@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reception Dashboard | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Clinic System</h2>
+            </div>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="{% url 'receptionist' %}" class="active">Reception Home</a></li>
+                    <li><a href="#">New Registration</a></li>
+                    <li><a href="#">Daily Schedule</a></li>
+                    <li><a href="#">Billing & Payments</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn-link">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-content">
+                    <h1>Reception Desk: {{ user.first_name }}</h1>
+                    <div class="user-info">
+                        <a href="#" class="btn btn-primary" style="color: white;">+ Quick Book</a>
+                    </div>
+                </div>
+            </header>
+
+            <section class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Checked In Today</h3>
+                        <p class="stat-number">{{ checked_in_count }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Appointments</h3>
+                        <p class="stat-number">{{ pending_appointments }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Available Doctors</h3>
+                        <p class="stat-number">{{ active_doctors }}</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Patient Check-In Queue</h2>
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Assigned Doctor</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in today_queue %}
+                            <tr>
+                                <td>{{ appointment.patient.user.first_name }} {{ appointment.patient.user.last_name }}</td>
+                                <td>Dr. {{ appointment.doctor.user.last_name }}</td>
+                                <td>{{ appointment.appointment_datetime|time:"H:i" }}</td>
+                                <td><span class="badge badge-pending">In Waiting Room</span></td>
+                                <td>
+                                    <a href="#" class="btn btn-small">Check-In</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5">Queue is currently empty.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

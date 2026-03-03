@@ -1,0 +1,402 @@
+/* ========== DESIGN SYSTEM ========== */
+:root {
+    /* Brand */
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --primary-light: #dbeafe;
+
+    /* Layout */
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: #1e293b;
+    --bg: #f8fafc;
+
+    /* Text */
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+
+    /* UI */
+    --white: #ffffff;
+    --border: #e2e8f0;
+
+    /* Effects */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+
+    --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+
+    --transition: all 0.25s ease;
+}
+
+/* ========== GLOBAL RESET ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Sora', 'Segoe UI', sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ========== LAYOUT ========== */
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+    width: 270px;
+    background: linear-gradient(180deg, #0f172a, #111827);
+    color: white;
+    padding: 30px 22px;
+    position: fixed;
+    height: 100vh;
+    transition: var(--transition);
+}
+
+.logo h2 {
+    text-align: center;
+    margin-bottom: 45px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--primary);
+}
+/* ========== SIDEBAR NAVIGATION ========== */
+
+.nav-menu ul {
+    list-style: none;
+}
+
+.nav-menu ul li {
+    margin-bottom: 10px;
+}
+
+/* Apply SAME style to both <a> and <button> */
+.nav-menu ul li a,
+.nav-menu ul li button {
+    display: block;
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-light);
+    font-weight: 500;
+    transition: var(--transition);
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Hover */
+.nav-menu ul li a:hover,
+.nav-menu ul li button:hover {
+    background-color: var(--sidebar-hover);
+    color: white;
+    transform: translateX(4px);
+}
+
+/* Active */
+.nav-menu ul li a.active,
+.nav-menu ul li button.active {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+}
+
+/* ========== MAIN CONTENT ========== */
+.main-content {
+    flex: 1;
+    margin-left: 270px;
+    padding: 40px;
+}
+
+/* ========== NAVBAR (Patient) ========== */
+.navbar {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(6px);
+    color: white;
+    padding: 18px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.navbar ul li a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.navbar ul li a:hover {
+    color: white;
+}
+
+/* ========== HEADERS ========== */
+.header {
+    margin-bottom: 40px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+/* ========== STATS CARDS ========== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 28px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: var(--primary);
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card h3 {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.stat-number {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+/* ========== CARDS ========== */
+.card,
+.patient-profile,
+.upcoming-appointments,
+.book-appointment {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 30px;
+}
+
+/* ========== TABLES ========== */
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.appointments-table thead tr {
+    border-bottom: 2px solid var(--border);
+}
+
+.appointments-table th {
+    padding: 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.appointments-table td {
+    padding: 18px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.appointments-table tbody tr {
+    transition: var(--transition);
+}
+
+.appointments-table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* ========== STATUS BADGES ========== */
+.badge {
+    padding: 7px 14px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-pending,
+.status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-confirmed,
+.status.confirmed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-cancelled,
+.status.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* ========== BUTTONS ========== */
+.btn {
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--transition);
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary,
+.btn-small {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover,
+.btn-small:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 90px;
+        padding: 20px 10px;
+    }
+
+    .sidebar .logo h2 {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 90px;
+    }
+
+    .nav-menu ul li a {
+        text-align: center;
+        padding: 14px 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 25px;
+    }
+
+    .header-content,
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+
+.patient-dashboard {
+    margin-left: 0 !important; 
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Make navbar buttons match navbar links */
+.navbar ul li a,
+.navbar ul li button {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.navbar ul li a:hover,
+.navbar ul li button:hover {
+    color: white;
+}
