@@ -16,10 +16,10 @@
             <nav class="nav-menu">
                 <ul>
                     <li><a href="{% url 'admin' %}" class="active">System Overview</a></li>
-                    <li><a href="#">Manage Staff</a></li>
-                    <li><a href="#">Manage Patients</a></li>
+                    <li><a href="{% url 'staff_register' %}">Register Staff</a></li>
+                    <li><a href="{% url 'manage_staff' %}">Manage Staff</a></li>
                     <li><a href="#">Clinic Analytics</a></li>
-                    <li><a href="{% url 'profile' %}">Profile</a></li>
+                    <li><a href="{% url 'edit_staff' user.id %}">Profile</a></li>
                     <li>
                         <form action="{% url 'logout' %}" method="post" style="display: inline;">
                             {% csrf_token %}

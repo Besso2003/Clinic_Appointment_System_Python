@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Staff | MediFlow Admin</title>
+    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Clinic System</h2>
+            </div>
+            <nav class="nav-menu">
+                <ul>
+                    <li>
+                        <a href="{% url 'admin' %}" class="{% if request.resolver_match.url_name == 'admin' %}active{% endif %}">
+                            System Overview
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'staff_register' %}" class="{% if request.resolver_match.url_name == 'staff_register' %}active{% endif %}">
+                            Register Staff
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'manage_staff' %}" class="{% if request.resolver_match.url_name == 'manage_staff' %}active{% endif %}">
+                            Manage Staff
+                        </a>
+                    </li>
+                    <li><a href="#">Clinic Analytics</a></li>
+                    <li><a href="{% url 'profile' %}">Profile</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display: block; width: 100%;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn-link">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-content">
+                    <h1>Staff Management</h1>
+                    <div class="user-info">
+                        <span>Logged in as: <strong>{{ user.email }}</strong></span>
+                    </div>
+                </div>
+            </header>
+
+            <section class="content">
+                <div class="card">
+                    <div class="header-content" style="margin-bottom: 25px;">
+                        <h2>All Staff Members</h2>
+                        <a href="{% url 'staff_register' %}" class="btn btn-primary">+ Register New Staff</a>
+                    </div>
+
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in staff_list %}
+                            <tr>
+                                <td><strong>{{ member.username }}</strong></td>
+                                <td>{{ member.first_name }} {{ member.last_name }}</td>
+                                <td>
+                                    <span class="badge badge-confirmed">
+                                        {{ member.get_role_display }}
+                                    </span>
+                                </td>
+                                <td>{{ member.email }}</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a href="{% url 'edit_staff' member.id %}" class="btn-action btn-update">
+                                            Update
+                                        </a>
+                                    
+                                        <form action="{% url 'delete_staff' member.id %}" method="post" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="button" 
+                                                    class="btn-action btn-delete btn-delete-trigger" 
+                                                    data-username="{{ member.username }}">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                    No staff members are currently registered in the system.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <!-- Fancy Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p id="deleteMessage">Are you sure you want to delete this staff member? This cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="cancelBtn" class="btn-action btn-cancel">Cancel</button>
+                <button id="confirmBtn" class="btn-action btn-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const modal = document.getElementById('deleteModal');
+    const deleteMessage = document.getElementById('deleteMessage');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const confirmBtn = document.getElementById('confirmBtn');
+
+    let currentForm = null;
+
+    // Attach click events to all delete buttons
+    document.querySelectorAll('.btn-delete-trigger').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentForm = btn.closest('form');
+            const username = btn.dataset.username;
+            deleteMessage.textContent = `Are you sure you want to delete ${username}? This cannot be undone.`;
+            modal.style.display = 'flex';
+        });
+    });
+
+    // Cancel button closes modal
+    cancelBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        currentForm = null;
+    });
+
+    // Confirm button submits the form
+    confirmBtn.addEventListener('click', () => {
+        if(currentForm) currentForm.submit();
+    });
+
+    // Close modal on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            currentForm = null;
+        }
+    });
+});
+</script>
+</html>
