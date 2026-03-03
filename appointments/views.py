@@ -63,6 +63,7 @@ def mark_as_no_show(request, appointment_id):
 
     return HttpResponse("Appointment marked as no show successfully.")
 
+## NOT YET
 @login_required
 @transaction.atomic
 def mark_as_completed(request, appointment_id):
@@ -186,8 +187,7 @@ def cancel_appointment(request, appointment_id):
 
     return HttpResponse("Appointment cancelled successfully.")
 
-# Done
-
+## done
 @login_required
 @transaction.atomic
 def reschedule_appointment(request, appointment_id, new_slot_id):
@@ -245,6 +245,7 @@ def confirm_appointment(request, appointment_id):
     # return redirect("list_today_appointments")
     return HttpResponse("Appointment confirmed successfully.")
 
+## NOT YET
 @login_required
 def mark_as_checked_in(request, appointment_id):
 
@@ -306,7 +307,7 @@ def list_doctor_appointments(request):
         "appointments": appointments
     })
 
-# Done
+## done
 @login_required
 def list_today_appointments(request):
     if request.user.role != "R":
@@ -324,8 +325,7 @@ def list_today_appointments(request):
     })
 
 
-## Done
-
+## done
 @login_required
 def show_reschedule_form(request, appointment_id):
 
