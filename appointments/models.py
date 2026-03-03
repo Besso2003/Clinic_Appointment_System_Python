@@ -47,10 +47,11 @@ class Appointment(models.Model):
 
     class Meta:
         constraints = [
-            # models.UniqueConstraint(
-            #     fields=["slot"],
-            #     name="unique_slot_booking"
-            # )
+            models.UniqueConstraint(
+                fields=['slot'],
+                condition=models.Q(status__in=['REQUESTED', 'CONFIRMED']),
+                name='unique_slot_booking_active'
+            )
         ]
 
     def clean(self):
