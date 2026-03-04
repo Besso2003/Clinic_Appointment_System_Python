@@ -340,12 +340,18 @@ def list_today_appointments(request):
 
     appointments = Appointment.objects.filter(
         slot__doctor_schedule__day_of_week=weekday_number
-    ).select_related("patient", "doctor", "slot")
+    ).select_related("patient", "doctor", "slot").order_by(
+        "slot__date", "slot__start_time"
+    )
 
+    status_filter = request.GET.get('status')
+    if status_filter == "pending":
+        appointments = appointments.filter(status__in=['REQUESTED', 'CONFIRMED'])
+    elif status_filter == "checked_in":
+        appointments = appointments.filter(status='CHECKED_IN')
     return render(request, "appointments/receptionist_list_appointments.html", {
         "appointments": appointments
     })
-
 
 ## done
 @login_required

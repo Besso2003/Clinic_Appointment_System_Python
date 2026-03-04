@@ -58,10 +58,12 @@
               <h3>Checked In Today</h3>
               <p class="stat-number">{{ checked_in_count }}</p>
             </div>
-            <div class="stat-card">
-              <h3>Pending Appointments</h3>
-              <p class="stat-number">{{ pending_appointments }}</p>
-            </div>
+           <a href="{% url 'list_today_appointments' %}?status=pending" style="text-decoration: none; color: inherit;">
+  <div class="stat-card">
+    <h3>Pending Appointments</h3>
+    <p class="stat-number">{{ pending_appointments }}</p>
+  </div>
+</a>
             <div class="stat-card">
               <h3>Available Doctors</h3>
               <p class="stat-number">{{ active_doctors }}</p>
