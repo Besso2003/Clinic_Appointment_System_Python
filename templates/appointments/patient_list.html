@@ -18,6 +18,24 @@
             background-color: #28a745;
             color: white;
         }
+
+        /* Clickable row effect */
+        .clickable-row {
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .clickable-row:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+            transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Keep buttons inside row clickable */
+        .clickable-row a,
+        .clickable-row button {
+            cursor: pointer;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +89,7 @@
                         </thead>
                         <tbody>
                             {% for appt in appointments %}
-                            <tr>
+                            <tr class="clickable-row" onclick="window.location='{% url 'appointment_details' appt.id %}'">
                                 <td>Dr. {{ appt.doctor.get_full_name }}</td>
                                 <td>{{ appt.slot.date|date:"Y-m-d" }}</td>
                                 <td>{{ appt.slot.start_time|time:"H:i" }} - {{ appt.slot.end_time|time:"H:i" }}</td>
@@ -81,7 +99,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    {% if appt.status == "REQUESTED" or appt.status == "CONFIRMED" %}
+                                    {% if appt.status in "REQUESTED,CONFIRMED" %}
                                         <a href="{% url 'show_reschedule_form' appt.id %}" class="btn-med btn-outline reschedule-btn">
                                             Reschedule
                                         </a>

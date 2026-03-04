@@ -23,4 +23,6 @@ urlpatterns = [
     path("appointments/<int:appointment_id>/reschedule/<int:new_slot_id>/",views.reschedule_appointment,name="reschedule_appointment"),
     # Receptionist - list today's appointments
     path('receptionist/today-appointments/', views.list_today_appointments, name='list_today_appointments'),
+
+    path("appointments/<int:appointment_id>/details/", views.appointment_details, name="appointment_details"),
 ]
