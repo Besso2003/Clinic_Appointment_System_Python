@@ -1,90 +1,45 @@
 {% extends 'base.html' %}
-{% block title %}MediFlow | Create Consultation{% endblock %}
+{% block title %}MediFlow | Consultation Record{% endblock %}
 
 {% block content %}
 
-<!-- ================= PAGE HEADER ================= -->
-<section class="hero-section" style="padding:80px 20px 40px;">
-    <h1>Create Consultation Record</h1>
-    <p>Fill in the consultation details carefully before saving.</p>
-</section>
+<section class="auth-page" style="padding: 60px 20px;">
+    <div class="glass-card auth-card" style="max-width: 700px;">
+        
+        <div class="medical-icon" style="margin-bottom: 1rem;">🩺</div>
+        <h2>Consultation Record</h2>
+        <p class="subtitle">Complete the patient consultation details</p>
 
-<!-- ================= FORM SECTION ================= -->
-<section class="content-section">
-    <div class="features-grid" style="max-width:800px; margin:auto;">
-        <div class="feature-card">
+        <form method="post" class="med-form">
+            {% csrf_token %}
 
-            <form method="post" novalidate>
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                    <div style="color:#c0392b; margin-bottom:20px;">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                <div style="display:flex; flex-direction:column; gap:25px;">
-
-                    <!-- Diagnosis -->
-                    <div>
-                        <label for="{{ form.diagnosis.id_for_label }}"><strong>Diagnosis</strong></label>
-                        {{ form.diagnosis }}
-                        {% if form.diagnosis.errors %}
-                            <div style="color:#c0392b; font-size:14px;">
-                                {{ form.diagnosis.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Notes -->
-                    <div>
-                        <label for="{{ form.notes.id_for_label }}"><strong>Doctor Notes</strong></label>
-                        {{ form.notes }}
-                        {% if form.notes.errors %}
-                            <div style="color:#c0392b; font-size:14px;">
-                                {{ form.notes.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Prescription -->
-                    <div>
-                        <label for="{{ form.prescription.id_for_label }}"><strong>Prescription</strong></label>
-                        {{ form.prescription }}
-                        {% if form.prescription.errors %}
-                            <div style="color:#c0392b; font-size:14px;">
-                                {{ form.prescription.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Requested Tests -->
-                    <div>
-                        <label for="{{ form.requested_tests.id_for_label }}"><strong>Requested Tests</strong></label>
-                        {{ form.requested_tests }}
-                        {% if form.requested_tests.errors %}
-                            <div style="color:#c0392b; font-size:14px;">
-                                {{ form.requested_tests.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-
+            {% if form.non_field_errors %}
+                <div class="error-text" style="text-align: center; margin-bottom: 15px; padding: 10px; background: #fee2e2; border-radius: 8px;">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
                 </div>
+            {% endif %}
 
-                <!-- Actions -->
-                <div style="margin-top:35px; display:flex; gap:15px;">
-                    <button type="submit" class="btn-med btn-solid">
-                        Save Consultation
-                    </button>
-
-                    <a href=".." class="btn-med btn-outline">
-                        Cancel
-                    </a>
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p class="error-text">{{ error }}</p>
+                    {% endfor %}
                 </div>
+            {% endfor %}
 
-            </form>
+            <button type="submit" class="btn-med btn-solid" style="width:100%; margin-top:1.5rem;">
+                Save Consultation
+            </button>
 
-        </div>
+            <a href=".." class="btn-med btn-outline" style="width:100%; margin-top:10px; text-align:center;">
+                Cancel
+            </a>
+        </form>
+
     </div>
 </section>
 
