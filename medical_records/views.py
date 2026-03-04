@@ -6,10 +6,12 @@ from django.http import HttpResponse
 from appointments.models import Appointment
 # Create your views here.
 
+from .forms import ConsultationRecordForm
+
 class CreateConsultationRecord(CreateView):
     model = ConsultationRecord
+    form_class = ConsultationRecordForm
     template_name = 'medical_records/consultationrecord_form.html'
-    fields = ['diagnosis', 'notes', 'prescription', 'requested_tests']
 
     def form_valid(self, form):
         appointment = get_object_or_404(
@@ -18,19 +20,17 @@ class CreateConsultationRecord(CreateView):
         )
         form.instance.appointment = appointment
         return super().form_valid(form)
-    
-    
+
     def get_success_url(self):
-        # Redirect to the detail page of the newly created record
         return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
 
 class UpdateConsultationRecord(UpdateView):
     model = ConsultationRecord
-    template_name = 'medical_records/consultationrecord_form.html'  
-    fields = ['diagnosis', 'notes', 'prescription', 'requested_tests']
+    form_class = ConsultationRecordForm
+    template_name = 'medical_records/consultationrecord_form.html'
+
     def get_success_url(self):
-        # Redirect to the detail page after updating
         return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
 class ViewConsultationRecord(DetailView):

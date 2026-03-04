@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Analytics | MediFlow</title>
+    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Clinic System</h2>
+            </div>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="{% url 'admin' %}">System Overview</a></li>
+                    <li><a href="{% url 'staff_register' %}">Register Staff</a></li>
+                    <li><a href="{% url 'manage_staff' %}">Manage Staff</a></li>
+                    <li><a href="{% url 'admin_analytics' %}" class="active">Clinic Analytics</a></li>
+                    <li><a href="{% url 'edit_staff' user.id %}">Profile</a></li>
+                    <li>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn-link">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-content">
+                    <h1>Clinic Analytics Dashboard</h1>
+                    <div class="user-info">
+                        <span>{{ user.email }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <section class="content">
+
+                <!-- KPI CARDS -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Appointments</h3>
+                        <p class="stat-number">{{ total_appointments }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completion Rate</h3>
+                        <p class="stat-number">{{ completion_rate }}%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>No-Show Rate</h3>
+                        <p class="stat-number">{{ no_show_rate }}%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Slot Utilization</h3>
+                        <p class="stat-number">{{ utilization_rate }}%</p>
+                    </div>
+                </div>
+
+                <!-- Doctor Performance -->
+                <div class="card">
+                    <h2>Doctor Performance</h2>
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Total Appointments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doctor in doctor_stats %}
+                            <tr>
+                                <td>{{ doctor.doctor__first_name }} {{ doctor.doctor__last_name }}</td>
+                                <td>{{ doctor.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2">No data available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Peak Hours -->
+                <div class="card">
+                    <h2>Peak Booking Hours</h2>
+                    <table class="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Hour</th>
+                                <th>Total Bookings</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hour in peak_hours %}
+                            <tr>
+                                <td>{{ hour.hour }}:00</td>
+                                <td>{{ hour.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2">No booking data available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </main>
+    </div>
+</body>
+</html>

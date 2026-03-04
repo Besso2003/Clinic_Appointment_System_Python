@@ -35,10 +35,10 @@
             <hr style="margin:20px 0;">
 
             <h3>📅 Appointment Date</h3>
-            <p>{{ record.appointment.date|date:"F d, Y" }}</p>
+            <p>{{ record.appointment.slot.date }}</p>
 
             <div style="margin-top:30px;">
-            <a href="{% url 'patient-medical-history' patient_id=1 %}" class="btn-med btn-outline">
+            <a href="{% url 'patient-medical-history'  record.appointment.patient_id %}" class="btn-med btn-solid">
                 Back to Medical History
             </a>
             </div>
