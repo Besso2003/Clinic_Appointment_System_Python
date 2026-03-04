@@ -22,9 +22,7 @@
     }
 
     .profile-card-header {
-      background: linear-gradient(135deg,
-          var(--primary),
-          var(--primary-dark));
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       color: white;
       padding: 30px;
       border-radius: var(--radius-md);
@@ -32,24 +30,26 @@
       box-shadow: var(--shadow-md);
     }
 
-    /* Filter Buttons Styling */
+    /* ===== Filter Buttons (Doctor Style) ===== */
     .filter-container {
       display: flex;
-      gap: 10px;
+      gap: 12px;
     }
 
     .filter-btn {
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-size: 13px;
+      padding: 8px 18px;
+      border-radius: 50px;
       text-decoration: none;
-      font-weight: 500;
-      transition: 0.2s ease;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      display: inline-block;
     }
 
     .filter-requested {
       background: #facc15;
-      color: #000;
+      color: white;
     }
 
     .filter-confirmed {
@@ -68,7 +68,15 @@
     }
 
     .filter-btn:hover {
-      opacity: 0.85;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+      opacity: 0.9;
+    }
+
+    .filter-btn.active {
+      transform: scale(0.95);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.25);
+      opacity: 1;
     }
   </style>
 </head>
@@ -82,8 +90,7 @@
 
       <nav class="nav-center">
         <a href="{% url 'patient' %}" class="nav-link active">Dashboard</a>
-        <a href="{% url 'show_create_appointment_form' %}" class="nav-link">
-          Book Appointment</a>
+        <a href="{% url 'show_create_appointment_form' %}" class="nav-link">Book Appointment</a>
         <a href="{% url 'list_patient_appointments' %}" class="nav-link">My History</a>
       </nav>
 
@@ -105,7 +112,6 @@
     </header>
 
     <main class="patient-dashboard">
-
       <section class="profile-card-header">
         <h1>Welcome back, {{ user.first_name }}!</h1>
         <p style="opacity: 0.9">
@@ -138,24 +144,27 @@
 
       <!-- Appointment Section -->
       <section class="card">
-
         <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:20px;">
           <h2>Upcoming Appointments</h2>
 
           <div class="filter-container">
-            <a href="{% url 'list_patient_appointments' %}?status=REQUESTED" class="filter-btn filter-requested">
+            <a href="{% url 'list_patient_appointments' %}?status=REQUESTED"
+               class="filter-btn filter-requested {% if current_status == 'REQUESTED' %}active{% endif %}">
               Requested
             </a>
 
-            <a href="{% url 'list_patient_appointments' %}?status=CONFIRMED" class="filter-btn filter-confirmed">
+            <a href="{% url 'list_patient_appointments' %}?status=CONFIRMED"
+               class="filter-btn filter-confirmed {% if current_status == 'CONFIRMED' %}active{% endif %}">
               Confirmed
             </a>
 
-            <a href="{% url 'list_patient_appointments' %}?status=CANCELLED" class="filter-btn filter-cancelled">
+            <a href="{% url 'list_patient_appointments' %}?status=CANCELLED"
+               class="filter-btn filter-cancelled {% if current_status == 'CANCELLED' %}active{% endif %}">
               Cancelled
             </a>
 
-            <a href="{% url 'list_patient_appointments' %}" class="filter-btn filter-all">
+            <a href="{% url 'list_patient_appointments' %}"
+               class="filter-btn filter-all {% if not current_status %}active{% endif %}">
               All
             </a>
           </div>
@@ -190,8 +199,7 @@
               </td>
               <td>
                 {% if appointment.status != "CANCELLED" %}
-                <a href="{% url 'cancel_appointment' appointment.id %}" class="btn btn-danger"
-                  style="padding: 5px 10px; font-size: 12px">
+                <a href="{% url 'cancel_appointment' appointment.id %}" class="filter-btn filter-cancelled" style="padding:5px 10px; font-size:12px;">
                   Cancel
                 </a>
                 {% endif %}
