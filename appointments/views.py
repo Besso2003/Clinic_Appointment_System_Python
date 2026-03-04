@@ -293,12 +293,21 @@ def list_patient_appointments(request):
     if request.user.role != "P":
         return HttpResponseForbidden("Only patients allowed.")
 
+    status_filter = request.GET.get("status")
+
     appointments = Appointment.objects.filter(
         patient=request.user
-    ).select_related("doctor", "slot")
+    ).select_related("doctor", "slot").order_by(
+        "slot__date", "slot__start_time"
+    )
+
+    # Apply filter if status is provided
+    if status_filter in ["REQUESTED", "CONFIRMED", "CANCELLED"]:
+        appointments = appointments.filter(status=status_filter)
 
     return render(request, "appointments/patient_list.html", {
-        "appointments": appointments
+        "appointments": appointments,
+        "current_status": status_filter  # optional (useful for highlighting active button)
     })
 
 ## done
