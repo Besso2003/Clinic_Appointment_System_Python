@@ -3,115 +3,234 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doctor Dashboard</title>
+
+<link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}">
+
+<style>
+
+/* ===== Filter Layout ===== */
+.appointment-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.filter-container{
+    display:flex;
+    gap:12px;
+}
+
+/* ===== Filter Buttons ===== */
+.filter-btn{
+    padding:8px 18px;
+    border-radius:50px;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:600;
+    transition:all 0.25s ease;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Default Colors */
+.filter-requested{
+    background:#facc15;
+    color:white;
+}
+
+.filter-confirmed{
+    background:#22c55e;
+    color:white;
+}
+
+.filter-cancelled{
+    background:#ef4444;
+    color:white;
+}
+
+/* Hover Effect */
+.filter-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 14px rgba(0,0,0,0.15);
+    opacity:0.9;
+}
+
+/* Active (Clicked) Effect */
+.filter-btn.active{
+    transform:scale(0.95);
+    box-shadow:inset 0 3px 8px rgba(0,0,0,0.25);
+    opacity:1;
+}
+
+</style>
+
 </head>
 
 <body>
-    <div class="container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="logo">
-                <h2>Clinic System</h2>
-            </div>
-            <nav class="nav-menu">
-                <ul>
-                    <li><a href="{% url 'doctor' %}" class="active">Dashboard</a></li>
-                    <li><a href="{% url 'doctor' %}">My Appointments</a></li>
-                    <li><a href="#">Patients</a></li>
-                    <li><a href="#">Schedule</a></li>
-                    <li><a href="{% url 'profile' %}">Profile</a></li>
-                    <li>
-                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="logout-btn-link">Logout</button>
-                        </form>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-content">
-                    <h1>Welcome, Dr. {{ user.first_name }} {{ user.last_name }}</h1>
-                    <div class="user-info">
-                        <span>{{ user.email }}</span>
-                    </div>
-                </div>
-            </header>
+<div class="container">
 
-            <!-- Dashboard Content -->
-            <section class="content">
-                <!-- Stats Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Today's Appointments</h3>
-                        <p class="stat-number">{{ todays_appointments }}</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Patients</h3>
-                        <p class="stat-number">{{ total_patients }}</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pending Appointments</h3>
-                        <p class="stat-number">{{ pending_appointments }}</p>
-                    </div>
-                </div>
-
-                <!-- Upcoming Appointments -->
-                <div class="card">
-                    <h2>Upcoming Appointments</h2>
-                    <table class="appointments-table">
-                        <thead>
-                            <tr>
-                                <th>Patient Name</th>
-                                <th>Date & Time</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for appointment in appointments %}
-                            <tr>
-                                <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
-                                <td>{{ appointment.slot.date|date:"D, d M Y" }} {{ appointment.slot.start_time|time:"H:i" }}</td>
-                                <td>
-                                    <span class="badge badge-{{ appointment.status|lower }}">
-                                        {{ appointment.status }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if appointment.status == "REQUESTED" %}
-                                    <form action="{% url 'confirm_appointment' appointment.id %}" method="post" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-small btn-success">Confirm</button>
-                                    </form>
-                                    {% endif %}
-
-                                    {% if appointment.status == "REQUESTED" or appointment.status == "CONFIRMED" %}
-                                    <form action="{% url 'cancel_appointment' appointment.id %}" method="post" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-small btn-danger">Cancel</button>
-                                    </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4">No appointments scheduled</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="logo">
+        <h2>Clinic System</h2>
     </div>
-</body>
 
+    <nav class="nav-menu">
+        <ul>
+            <li><a href="{% url 'doctor' %}" class="active">Dashboard</a></li>
+            <li><a href="{% url 'doctor' %}">My Appointments</a></li>
+            <li><a href="#">Patients</a></li>
+            <li><a href="#">Schedule</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+            <li>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn-link">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</aside>
+
+
+<!-- Main Content -->
+<main class="main-content">
+
+<header class="header">
+    <div class="header-content">
+        <h1>Welcome, Dr. {{ user.first_name }} {{ user.last_name }}</h1>
+        <div class="user-info">
+            <span>{{ user.email }}</span>
+        </div>
+    </div>
+</header>
+
+
+<section class="content">
+
+<!-- Stats -->
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <h3>Today's Appointments</h3>
+        <p class="stat-number">{{ todays_appointments }}</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Total Patients</h3>
+        <p class="stat-number">{{ total_patients }}</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Pending Appointments</h3>
+        <p class="stat-number">{{ pending_appointments }}</p>
+    </div>
+
+</div>
+
+
+<!-- Appointment Card -->
+<div class="card">
+
+    <!-- Header with Right-Aligned Filters -->
+    <div class="appointment-header">
+        <h2 style="margin:0;">Appointments</h2>
+
+        <div class="filter-container">
+
+            <a href="{% url 'list_doctor_appointments' %}?status=REQUESTED"
+               class="filter-btn filter-requested {% if current_status == 'REQUESTED' %}active{% endif %}">
+               Requested
+            </a>
+
+            <a href="{% url 'list_doctor_appointments' %}?status=CONFIRMED"
+               class="filter-btn filter-confirmed {% if current_status == 'CONFIRMED' %}active{% endif %}">
+               Confirmed
+            </a>
+
+            <a href="{% url 'list_doctor_appointments' %}?status=CANCELLED"
+               class="filter-btn filter-cancelled {% if current_status == 'CANCELLED' %}active{% endif %}">
+               Cancelled
+            </a>
+
+        </div>
+    </div>
+
+
+    <table class="appointments-table">
+        <thead>
+            <tr>
+                <th>Patient Name</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for appointment in appointments %}
+        <tr>
+
+            <td>
+                {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+            </td>
+
+            <td>
+                {{ appointment.slot.date|date:"D, d M Y" }}
+                {{ appointment.slot.start_time|time:"H:i" }}
+            </td>
+
+            <td>
+                <span class="badge badge-{{ appointment.status|lower }}">
+                    {{ appointment.status }}
+                </span>
+            </td>
+
+            <td>
+
+            {% if appointment.status == "REQUESTED" %}
+            <form action="{% url 'confirm_appointment' appointment.id %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-small btn-success">
+                    Confirm
+                </button>
+            </form>
+            {% endif %}
+
+            {% if appointment.status == "REQUESTED" or appointment.status == "CONFIRMED" %}
+            <form action="{% url 'cancel_appointment' appointment.id %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-small btn-danger">
+                    Cancel
+                </button>
+            </form>
+            {% endif %}
+
+            </td>
+
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="4">No appointments found.</td>
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+</body>
 </html>

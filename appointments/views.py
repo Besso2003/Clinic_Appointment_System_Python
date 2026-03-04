@@ -313,17 +313,20 @@ def list_patient_appointments(request):
 ## done
 @login_required
 def list_doctor_appointments(request):
+
     if request.user.role != "D":
         return HttpResponseForbidden("Only doctors allowed.")
 
-    status_filter = request.GET.get("status", "REQUESTED")  # default to REQUESTED
+    status_filter = request.GET.get("status", "REQUESTED")
+
     appointments = Appointment.objects.filter(
         doctor=request.user,
         status=status_filter
     ).select_related("patient", "slot")
 
     return render(request, "appointments/doctor_list.html", {
-        "appointments": appointments
+        "appointments": appointments,
+        "current_status": status_filter
     })
 
 ## done
