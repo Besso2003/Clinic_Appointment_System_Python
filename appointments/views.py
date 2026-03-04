@@ -1,3 +1,4 @@
+import datetime
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required, permission_required
@@ -5,7 +6,6 @@ from django.http import HttpResponseForbidden
 from django.db import transaction
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from datetime import datetime, timedelta
 from django.utils import timezone
 from .models import Appointment, Slot
 
@@ -20,6 +20,16 @@ from scheduling.services import generate_slots_for_schedule  # import your funct
 def is_admin(user):
     return user.is_superuser  # or you can use another permission check
 
+def handle_errors(view_func):
+    def wrapper(request, *args, **kwargs):
+        try:
+            return view_func(request, *args, **kwargs)
+        except (PermissionError, ValueError, ValidationError) as e:
+            return render(request, "appointments/error.html", {"error_message": str(e)})
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            return render(request, "appointments/error.html", {"error_message": "Something went wrong. Please try again later."})
+    return wrapper
 
 @login_required
 # @user_passes_test(is_admin)
@@ -42,10 +52,11 @@ def generate_slots_view(request, schedule_id):
 # assign this codename to receptionists so has_perm() will succeed automatically
 @permission_required('appointments.change_appointment', raise_exception=True)
 @transaction.atomic
+@handle_errors
 def mark_as_no_show(request, appointment_id):
 
     if not request.user.groups.filter(name="Receptionist").exists():
-        return HttpResponseForbidden("Only receptionist allowed.")
+        raise PermissionError("Only Receptionists can mark no show.")
 
     appointment = get_object_or_404(
         Appointment.objects.select_for_update(),
@@ -53,7 +64,7 @@ def mark_as_no_show(request, appointment_id):
     )
 
     if appointment.status not in ["CONFIRMED"]:
-        return HttpResponseForbidden("Invalid transition.")
+        raise ValidationError("Appointment must be confirmed first.")
 
     appointment.status = "NO_SHOW"
     appointment.save()
@@ -66,10 +77,11 @@ def mark_as_no_show(request, appointment_id):
 ## NOT YET
 @login_required
 @transaction.atomic
+@handle_errors
 def mark_as_completed(request, appointment_id):
 
     if request.user.role != "D":
-        return HttpResponseForbidden("Only doctor allowed.")
+        raise PermissionError("Only doctor allowed.")
     
     appointment = get_object_or_404(
         Appointment.objects.select_for_update(),
@@ -77,10 +89,10 @@ def mark_as_completed(request, appointment_id):
     )
 
     if appointment.doctor != request.user:
-        return HttpResponseForbidden("You can only complete your own appointments.")
+        raise PermissionError("You are not allowed")
 
     if appointment.status != "CONFIRMED":
-        return HttpResponseForbidden("Invalid Transition!")
+        raise ValidationError("Appointment must be confirmed first.")
     
     appointment.status = "COMPLETED"
     appointment.updated_at = timezone.now()
@@ -90,9 +102,11 @@ def mark_as_completed(request, appointment_id):
 
 ## done
 @login_required
+@handle_errors
 def show_create_appointment_form(request):
     if request.user.role != "P":
-        return HttpResponseForbidden("Only patients can book appointments.")
+        raise PermissionError("Only Patients Are Allowed")
+
 
     # Optional: filter by doctor via GET parameter
     doctor_id = request.GET.get("doctor_id")
@@ -119,10 +133,12 @@ def show_create_appointment_form(request):
 ## done
 @login_required
 @transaction.atomic
+@handle_errors
 def create_appointment(request, slot_id):
 
     if request.user.role != "P":
-        return HttpResponseForbidden("Only patients can book appointments.")
+        raise PermissionError("Only Patients Are Allowed")
+
 
     slot = get_object_or_404(
         Slot.objects.select_for_update(),
@@ -161,6 +177,7 @@ def prevent_double_booking(slot):
 ## done
 @login_required
 @transaction.atomic
+@handle_errors
 def cancel_appointment(request, appointment_id):
 
     appointment = get_object_or_404(
@@ -169,12 +186,13 @@ def cancel_appointment(request, appointment_id):
     )
 
     if request.user.role == "P" and appointment.patient != request.user:
-        return HttpResponseForbidden("You can only cancel your own appointments.")
+        raise PermissionError("You are not allowed")
+
     elif request.user.role not in ["P", "R", "D"]:
-        return HttpResponseForbidden("Only patients, receptionists, or doctors can cancel appointments.")
+        raise PermissionError("You are not allowed")
 
     if appointment.status not in ["REQUESTED", "CONFIRMED"]:
-        return HttpResponseForbidden("Appointment cannot be cancelled at this stage.")
+        raise ValidationError("Status should be requested or confirmed only.")
 
     appointment.status = "CANCELLED"
     appointment.updated_at = timezone.now()
@@ -195,6 +213,7 @@ def cancel_appointment(request, appointment_id):
 ## done
 @login_required
 @transaction.atomic
+@handle_errors
 def reschedule_appointment(request, appointment_id, new_slot_id):
 
     appointment = get_object_or_404(
@@ -203,10 +222,12 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
     )
 
     if request.user != appointment.patient:
-        return HttpResponseForbidden("You cannot reschedule this appointment.")
+        raise PermissionError("You are not allowed")
+
     
     if appointment.status not in ["REQUESTED", "CONFIRMED"]:
-        return HttpResponseForbidden("This appointment cannot be rescheduled.")
+        raise ValidationError("SStatus should be requested or confirmed only.")
+
 
     new_slot = get_object_or_404(
         Slot.objects.select_for_update(),
@@ -216,7 +237,8 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
     prevent_double_booking(new_slot)
 
     if new_slot.doctor_schedule.doctor != appointment.doctor:
-        return HttpResponseForbidden("Invalid slot selection.")
+        raise ValidationError("Invalid Slot Selection.")
+
 
     old_slot = appointment.slot
     old_slot.is_available = True
@@ -234,15 +256,18 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
 
 ## done
 @login_required
+@handle_errors
 def confirm_appointment(request, appointment_id):
 
     if request.user.role not in ["R", "D"]:
-        return HttpResponseForbidden("Only receptionist or doctor can confirm.")
+        raise PermissionError("You are not allowed")
+
 
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
     if appointment.status != "REQUESTED":
-        return HttpResponseForbidden("Only requested appointments can be confirmed.")
+        raise ValidationError("Only requested appointments can be confirmed.")
+
 
     appointment.status = "CONFIRMED"
     appointment.save()
@@ -257,15 +282,18 @@ def confirm_appointment(request, appointment_id):
 
 ## NOT YET
 @login_required
+@handle_errors
 def mark_as_checked_in(request, appointment_id):
 
     if request.user.role != "R":
-        return HttpResponseForbidden("Only receptionist allowed.")
+        raise PermissionError("Only Receptionists Are Allowed.")
+
 
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
     if appointment.status != "CONFIRMED":
-        return HttpResponseForbidden("Appointment must be confirmed first.")
+        raise ValidationError("Only Confirmed can be checked in.")
+
 
     appointment_datetime = datetime.combine(
         timezone.now().date(),
@@ -274,7 +302,7 @@ def mark_as_checked_in(request, appointment_id):
 
     appointment_datetime = timezone.make_aware(appointment_datetime)
 
-    allowed_period = appointment_datetime + timedelta(minutes=15)
+    allowed_period = appointment_datetime + datetime.timedelta(minutes=15)
 
     if timezone.now() > allowed_period:
         appointment.status = "NO_SHOW"
@@ -288,10 +316,12 @@ def mark_as_checked_in(request, appointment_id):
 
 ## done
 @login_required
+@handle_errors
 def list_patient_appointments(request):
 
     if request.user.role != "P":
-        return HttpResponseForbidden("Only patients allowed.")
+        raise PermissionError("Only Patients Are Allowed")
+
 
     status_filter = request.GET.get("status")
 
@@ -312,10 +342,12 @@ def list_patient_appointments(request):
 
 ## done
 @login_required
+@handle_errors
 def list_doctor_appointments(request):
 
     if request.user.role != "D":
-        return HttpResponseForbidden("Only doctors allowed.")
+        raise PermissionError("Only Doctors Are Allowed")
+
 
     status_filter = request.GET.get("status", "REQUESTED")
 
@@ -331,9 +363,11 @@ def list_doctor_appointments(request):
 
 ## done
 @login_required
+@handle_errors
 def list_today_appointments(request):
     if request.user.role != "R":
-        return HttpResponseForbidden("Only receptionist allowed.")
+        raise PermissionError("Only Receptionists Are Allowed")
+
 
     today = timezone.now().date()
     weekday_number = today.weekday()
@@ -355,7 +389,11 @@ def list_today_appointments(request):
 
 ## done
 @login_required
+@handle_errors
 def show_reschedule_form(request, appointment_id):
+    
+    if request.user.role != "R":
+        raise PermissionError("Only Receptionists Are Allowed")
 
     appointment = get_object_or_404(
         Appointment,
