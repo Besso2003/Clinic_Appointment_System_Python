@@ -5,9 +5,9 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseForbidden
 from django.db import transaction
 from django.utils import timezone
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
-from .models import Appointment, Slot
+from .models import Appointment, Slot, AppointmentRescheduleHistory
 
 # appointments/views.py
 # from django.shortcuts import get_object_or_404, HttpResponse
@@ -221,13 +221,17 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
         id=appointment_id
     )
 
-    if request.user != appointment.patient:
-        raise PermissionError("You are not allowed")
+    user = request.user
 
-    
+    is_patient = appointment.patient == user
+    is_doctor = appointment.doctor == user
+    is_receptionist = user.groups.filter(name="Receptionist").exists()
+
+    if not (is_patient or is_doctor or is_receptionist):
+        raise PermissionDenied("You are not allowed to reschedule this appointment.")
+
     if appointment.status not in ["REQUESTED", "CONFIRMED"]:
-        raise ValidationError("SStatus should be requested or confirmed only.")
-
+        raise ValidationError("Status must be REQUESTED or CONFIRMED only.")
 
     new_slot = get_object_or_404(
         Slot.objects.select_for_update(),
@@ -237,22 +241,55 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
     prevent_double_booking(new_slot)
 
     if new_slot.doctor_schedule.doctor != appointment.doctor:
-        raise ValidationError("Invalid Slot Selection.")
+        raise ValidationError("Invalid slot selection for this doctor.")
 
-
+    # Free old slot
     old_slot = appointment.slot
     old_slot.is_available = True
     old_slot.save()
 
+    # Update appointment
     appointment.slot = new_slot
-    appointment.doctor = new_slot.doctor_schedule.doctor
     appointment.status = "REQUESTED"
     appointment.save()
 
+    # Mark new slot unavailable
     new_slot.is_available = False
     new_slot.save()
 
-    return redirect("list_patient_appointments")
+    # Create history
+    AppointmentRescheduleHistory.objects.create(
+        appointment=appointment,
+        old_slot=old_slot,
+        new_slot=new_slot,
+        changed_by=user,
+        reason=request.POST.get("reason", "")
+    )
+
+    # Redirect by role
+    if is_patient:
+        return redirect('patient')
+    elif is_doctor:
+        return redirect('doctor')
+    else:
+        return redirect('list_today_appointments')
+
+
+@login_required
+def appointment_details(request, appointment_id):
+    appointment = get_object_or_404(
+        Appointment.objects.select_related("doctor", "patient", "slot"),
+        id=appointment_id
+    )
+
+    history = AppointmentRescheduleHistory.objects.filter(
+        appointment=appointment
+    ).select_related("old_slot", "new_slot", "changed_by").order_by("-id")
+
+    return render(request, "appointments/appointment_details.html", {
+        "appointment": appointment,
+        "history": history
+    })
 
 ## done
 @login_required
@@ -392,19 +429,33 @@ def list_today_appointments(request):
 @handle_errors
 def show_reschedule_form(request, appointment_id):
 
+
     # if request.user.role != "R":
     #     raise PermissionError("Only Receptionists Are Allowed")
 
-    appointment = get_object_or_404(
-        Appointment,
-        id=appointment_id,
-        patient=request.user
-    )
+
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    user = request.user
+
+    is_patient = appointment.patient == user
+    is_doctor = appointment.doctor == user
+    is_receptionist = user.groups.filter(name="Receptionist").exists()
+
+    if not (is_patient or is_doctor or is_receptionist):
+        raise PermissionDenied("You are not allowed to reschedule this appointment.")
+
+    if appointment.status not in ["REQUESTED", "CONFIRMED"]:
+        raise ValidationError("Only REQUESTED or CONFIRMED appointments can be rescheduled.")
 
     available_slots = Slot.objects.filter(
         is_available=True,
         doctor_schedule__doctor=appointment.doctor
-    ).select_related("doctor_schedule").order_by("date", "start_time")
+    ).exclude(
+        id=appointment.slot.id  # prevent selecting same slot
+    ).select_related(
+        "doctor_schedule"
+    ).order_by("date", "start_time")
 
     return render(request, "appointments/reschedule.html", {
         "appointment": appointment,
