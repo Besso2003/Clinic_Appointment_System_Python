@@ -463,7 +463,6 @@ def list_doctor_appointments(request):
 @login_required
 @handle_errors
 def list_today_appointments(request):
-
     if request.user.role != "R":
         raise PermissionError("Only Receptionists Are Allowed")
 
@@ -487,19 +486,14 @@ def list_today_appointments(request):
     # Filters
     if status:
         appointments = appointments.filter(status=status)
-
     if doctor:
         appointments = appointments.filter(doctor_id=doctor)
-
     if patient:
         appointments = appointments.filter(patient_id=patient)
-
     if start_date:
         appointments = appointments.filter(slot__date__gte=start_date)
-
     if end_date:
         appointments = appointments.filter(slot__date__lte=end_date)
-
     if search:
         appointments = appointments.filter(
             Q(id__icontains=search) |
@@ -509,8 +503,13 @@ def list_today_appointments(request):
 
     appointments = appointments.order_by("slot__date", "slot__start_time")
 
+    # --- Pagination ---
+    paginator = Paginator(appointments, 7)  # 7 appointments per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "appointments/receptionist_list_appointments.html", {
-        "appointments": appointments
+        "appointments": page_obj
     })
 
 ## done

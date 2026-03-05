@@ -8,6 +8,33 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* ================= PAGINATION ================= */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .pagination span {
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
@@ -39,7 +66,6 @@
 
         <!-- ================= TODAY'S APPOINTMENTS ================= -->
         <main class="content-section">
-
             <div class="glass-card">
                 <h2>Today's Appointments</h2>
                 <form method="get" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -57,15 +83,13 @@
                         </option>
                         <option value="CONFIRMED" {% if request.GET.status == "CONFIRMED" %}selected{% endif %}>Confirmed
                         </option>
-                        <option value="CHECKED_IN" {% if request.GET.status == "CHECKED_IN" %}selected{% endif %}>Checked
-                            In</option>
+                        <option value="CHECKED_IN" {% if request.GET.status == "CHECKED_IN" %}selected{% endif %}>Checked In
+                        </option>
                         <option value="CANCELLED" {% if request.GET.status == "CANCELLED" %}selected{% endif %}>Cancelled
                         </option>
                     </select>
 
-                    <button type="submit" class="btn-med btn-solid">
-                        Search
-                    </button>
+                    <button type="submit" class="btn-med btn-solid">Search</button>
 
                 </form>
 
@@ -87,7 +111,7 @@
                             <td>{{ appointment.patient.get_full_name }}</td>
                             <td>Dr. {{ appointment.doctor.get_full_name }}</td>
                             <td>{{ appointment.slot.date|date:"Y-m-d" }}</td>
-                            <td>{{ appointment.slot.start_time|date:"H:i" }} - {{ appointment.slot.end_time|date:"H:i"}}</td>
+                            <td>{{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i"}}</td>
                             <td>
                                 {% if appointment.status == "REQUESTED" %}
                                 <span class="badge">{{ appointment.status }}</span>
@@ -100,14 +124,12 @@
                                 <!-- Confirm button (green) -->
                                 <form method="post" action="{% url 'confirm_appointment' appointment.id %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn-med btn-solid"
-                                        style="background-color:#28a745;">Confirm</button>
+                                    <button type="submit" class="btn-med btn-solid" style="background-color:#28a745;">Confirm</button>
                                 </form>
                                 <!-- Cancel button (red) -->
                                 <form method="post" action="{% url 'cancel_appointment' appointment.id %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn-med btn-outline cancel"
-                                        style="border-color:#dc3545; color:#dc3545;">Cancel</button>
+                                    <button type="submit" class="btn-med btn-outline cancel" style="border-color:#dc3545; color:#dc3545;">Cancel</button>
                                 </form>
                                 {% else %}
                                 <span class="badge">{{ appointment.status }}</span>
@@ -117,6 +139,22 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+                <!-- ================= PAGINATION ================= -->
+                {% if appointments.has_other_pages %}
+                <div class="pagination">
+                    {% if appointments.has_previous %}
+                        <a href="?page={{ appointments.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                    {% endif %}
+
+                    <span>Page {{ appointments.number }} of {{ appointments.paginator.num_pages }}</span>
+
+                    {% if appointments.has_next %}
+                        <a href="?page={{ appointments.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 {% else %}
                 <p>No appointments scheduled for today.</p>
                 {% endif %}
