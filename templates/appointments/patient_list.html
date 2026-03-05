@@ -36,6 +36,29 @@
             cursor: pointer;
             pointer-events: auto;
         }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+        }
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+        .pagination span {
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -75,6 +98,7 @@
         <div class="glass-card">
             <h2>My Appointments</h2>
 
+            <!-- ================= APPOINTMENT TABLE ================= -->
             <div class="appointment-table-wrapper">
                 {% if appointments %}
                     <table class="table">
@@ -100,10 +124,7 @@
                                 </td>
                                 <td>
                                     {% if appt.status in "REQUESTED,CONFIRMED" %}
-                                        <a href="{% url 'show_reschedule_form' appt.id %}" class="btn-med btn-outline reschedule-btn">
-                                            Reschedule
-                                        </a>
-
+                                        <a href="{% url 'show_reschedule_form' appt.id %}" class="btn-med btn-outline reschedule-btn">Reschedule</a>
                                         <form method="POST" action="{% url 'cancel_appointment' appt.id %}" style="display:inline;">
                                             {% csrf_token %}
                                             <button type="submit" class="btn-med btn-outline cancel">Cancel</button>
@@ -116,6 +137,22 @@
                             {% endfor %}
                         </tbody>
                     </table>
+
+                    <!-- ================= PAGINATION ================= -->
+                    {% if appointments.has_other_pages %}
+                    <div class="pagination">
+                        {% if appointments.has_previous %}
+                            <a href="?page={{ appointments.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                        {% endif %}
+
+                        <span>Page {{ appointments.number }} of {{ appointments.paginator.num_pages }}</span>
+
+                        {% if appointments.has_next %}
+                            <a href="?page={{ appointments.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
                 {% else %}
                     <p class="no-slots">You have no appointments yet.</p>
                 {% endif %}

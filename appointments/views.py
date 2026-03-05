@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from scheduling.models import DoctorSchedule
 from scheduling.services import generate_slots_for_schedule
+from django.core.paginator import Paginator
 
 
 def is_admin(user):
@@ -126,10 +127,12 @@ def show_create_appointment_form(request):
         raise PermissionError("Only Patients Are Allowed")
 
     doctor_id = request.GET.get("doctor_id")
+    page_number = request.GET.get("page", 1)  # Get current page number
 
     today = timezone.localdate()
     now_time = timezone.localtime().time()
 
+    # Filter available slots
     slots = Slot.objects.filter(
         is_available=True
     ).filter(
@@ -143,14 +146,21 @@ def show_create_appointment_form(request):
 
     slots = slots.order_by("date", "start_time")
 
+    # Pagination: 10 slots per page
+    paginator = Paginator(slots, 10)
+    page_obj = paginator.get_page(page_number)
+
+    # Get doctors list
     from django.contrib.auth import get_user_model
     User = get_user_model()
     doctors = User.objects.filter(role="D")
 
     context = {
-        "slots": slots,
+        "slots": page_obj,  # paginated slots
         "doctors": doctors,
-        "selected_doctor_id": doctor_id
+        "selected_doctor_id": doctor_id,
+        "paginator": paginator,
+        "page_number": int(page_number),
     }
 
     return render(request, "appointments/create_appointment.html", context)
@@ -380,10 +390,8 @@ def mark_as_checked_in(request, appointment_id):
 @login_required
 @handle_errors
 def list_patient_appointments(request):
-
     if request.user.role != "P":
         raise PermissionError("Only Patients Are Allowed")
-
 
     status_filter = request.GET.get("status")
 
@@ -397,8 +405,13 @@ def list_patient_appointments(request):
     if status_filter in ["REQUESTED", "CONFIRMED", "CANCELLED"]:
         appointments = appointments.filter(status=status_filter)
 
+    # --- Pagination ---
+    paginator = Paginator(appointments, 7)  # 7 appointments per page
+    page_number = request.GET.get('page')  # Get ?page= parameter
+    page_obj = paginator.get_page(page_number)  # Safe: handles invalid pages
+
     return render(request, "appointments/patient_list.html", {
-        "appointments": appointments,
+        "appointments": page_obj,  # Use page_obj instead of appointments
         "current_status": status_filter
     })
 
@@ -501,14 +514,7 @@ def list_today_appointments(request):
 @login_required
 @handle_errors
 def show_reschedule_form(request, appointment_id):
-
-
-    # if request.user.role != "R":
-    #     raise PermissionError("Only Receptionists Are Allowed")
-
-
     appointment = get_object_or_404(Appointment, id=appointment_id)
-
     user = request.user
 
     is_patient = appointment.patient == user
@@ -535,8 +541,12 @@ def show_reschedule_form(request, appointment_id):
         "doctor_schedule"
     ).order_by("date", "start_time")
 
+    # PAGINATION: 10 slots per page
+    paginator = Paginator(available_slots, 10)
+    page_number = request.GET.get("page")
+    paginated_slots = paginator.get_page(page_number)
+
     return render(request, "appointments/reschedule.html", {
         "appointment": appointment,
-        "slots": available_slots
+        "slots": paginated_slots
     })
-
