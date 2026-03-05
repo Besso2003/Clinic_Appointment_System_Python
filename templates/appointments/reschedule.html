@@ -11,12 +11,11 @@
 <body>
 <div class="page-wrapper">
 
-    <!-- ================= HEADER ================= -->
+    <!-- HEADER -->
     <header class="main-header">
         <div class="logo-text">✚ MediFlow</div>
         <nav>
             <a href="{% url 'home' %}">Home</a>
-
             {% if user.is_authenticated %}
                 <div class="user-menu">
                     <a href="{% url 'profile' %}" class="user-info">
@@ -36,44 +35,32 @@
         </nav>
     </header>
 
-    <!-- ================= CONTENT ================= -->
+    <!-- CONTENT -->
     <main class="content-section">
-
         <div class="glass-card">
-            {% block content %}
-
             <h2>Reschedule Appointment</h2>
 
             <!-- Current Appointment Info -->
-            <div class="feature-card" style="margin-bottom: 30px;">
+            <div class="feature-card" style="margin-bottom:30px;">
                 <h3>Current Appointment</h3>
                 <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
                 <p><strong>Date:</strong> {{ appointment.slot.date|date:"Y-m-d" }}</p>
-                <p><strong>Time:</strong>
-                    {{ appointment.slot.start_time|time:"H:i" }} -
-                    {{ appointment.slot.end_time|time:"H:i" }}
-                </p>
-                <p>
-                    <span class="badge">
-                        {{ appointment.get_status_display }}
-                    </span>
-                </p>
+                <p><strong>Time:</strong> {{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i" }}</p>
+                <p><span class="badge">{{ appointment.get_status_display }}</span></p>
             </div>
 
             <!-- Reason Field -->
-            <div class="feature-card" style="margin-bottom: 30px;">
+            <div class="feature-card" style="margin-bottom:30px;">
                 <h3>Reason for Rescheduling</h3>
                 <textarea id="reschedule-reason"
                           name="reason"
                           placeholder="Enter reason for rescheduling (optional)"
                           rows="3"
-                          style="width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; font-family:'Sora', sans-serif;">
-                </textarea>
+                          style="width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; font-family:'Sora', sans-serif;"></textarea>
             </div>
 
             <!-- Available Slots -->
             <h3 style="margin-bottom: 15px;">Choose New Slot</h3>
-
             {% if slots %}
                 <div class="appointment-table-wrapper">
                     <table class="table">
@@ -88,45 +75,46 @@
                         {% for slot in slots %}
                             <tr>
                                 <td>{{ slot.date|date:"Y-m-d" }}</td>
-                                <td>
-                                    {{ slot.start_time|time:"H:i" }} -
-                                    {{ slot.end_time|time:"H:i" }}
-                                </td>
+                                <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
                                 <td>
                                     <form method="POST"
                                           action="{% url 'reschedule_appointment' appointment.id slot.id %}"
                                           onsubmit="attachReason(this)">
                                         {% csrf_token %}
                                         <input type="hidden" name="reason">
-                                        <button type="submit"
-                                                class="btn-med btn-solid confirm">
-                                            Select
-                                        </button>
+                                        <button type="submit" class="btn-med btn-solid confirm">Select</button>
                                     </form>
                                 </td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
+
+                    <!-- PAGINATION -->
+                    {% if slots.has_other_pages %}
+                        <div class="pagination" style="margin-top:15px; display:flex; justify-content:center; gap:10px;">
+                            {% if slots.has_previous %}
+                                <a href="?page={{ slots.previous_page_number }}">Previous</a>
+                            {% endif %}
+                            <span>Page {{ slots.number }} of {{ slots.paginator.num_pages }}</span>
+                            {% if slots.has_next %}
+                                <a href="?page={{ slots.next_page_number }}">Next</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             {% else %}
                 <p class="no-slots">No available slots for this doctor.</p>
             {% endif %}
 
             <!-- Back Button -->
-            <div style="margin-top: 25px; text-align: center;">
-                <a href="{% url 'list_patient_appointments' %}"
-                   class="btn-med btn-outline cancel">
-                    Cancel & Go Back
-                </a>
+            <div style="margin-top:25px; text-align:center;">
+                <a href="{% url 'list_patient_appointments' %}" class="btn-med btn-outline cancel">Cancel & Go Back</a>
             </div>
-
-            {% endblock %}
         </div>
-
     </main>
 
-    <!-- ================= FOOTER ================= -->
+    <!-- FOOTER -->
     <footer class="main-footer">
         <p>© {% now "Y" %} MediFlow</p>
         <p>Smart, Secure, Scalable Clinic Management.</p>
@@ -134,7 +122,7 @@
 
 </div>
 
-<!-- Script to Attach Reason to Selected Slot -->
+<!-- Script to Attach Reason -->
 <script>
 function attachReason(form) {
     const reason = document.getElementById("reschedule-reason").value.trim();

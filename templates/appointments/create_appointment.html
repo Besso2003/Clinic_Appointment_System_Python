@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>MediFlow | Book an Appointment</title>
@@ -8,101 +9,118 @@
     <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
-<div class="page-wrapper">
+    <div class="page-wrapper">
 
-    <!-- ================= HEADER ================= -->
-    <header class="main-header">
-        <div class="logo-text">✚ MediFlow</div>
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="#features">Features</a>
-            <a href="#solutions">Solutions</a>
-            {% if not user.is_authenticated %}
-                <a href="{% url 'login' %}" class="nav-link">Login</a>
-                <a href="{% url 'register' %}" class="btn-med btn-solid">Get Started</a>
-            {% else %}
-                <div class="user-menu">
-                    <a href="{% url 'profile' %}" class="user-info">
-                        {% if user.profile.image %}
-                            <img src="{{ user.profile.image.url }}" alt="User Photo" class="avatar">
-                        {% else %}
-                            <img src="{% static 'img/default-avatar.png' %}" alt="User Photo" class="avatar">
-                        {% endif %}
-                        <span class="username">{{ user.username }}</span>
-                    </a>
-                    <form action="{% url 'logout' %}" method="post" class="logout-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-med btn-outline">Logout</button>
-                    </form>
-                </div>
-            {% endif %}
-        </nav>
-    </header>
-
-    <!-- ================= APPOINTMENT CONTENT ================= -->
-    <main class="content-section">
-        <div class="glass-card">
-            <h2>Book an Appointment</h2>
-
-            <p>Available Slots: {{ slots.count }}</p>
-            <p>Total Doctors: {{ doctors.count }}</p>
-
-            <form method="get" class="med-form">
-                <div class="form-group">
-                    <label for="doctor">Select Doctor</label>
-                    <select name="doctor_id" id="doctor" onchange="this.form.submit()">
-                        <option value="">-- Select a doctor --</option>
-                        {% for doctor in doctors %}
-                            <option value="{{ doctor.id }}"
-                                {% if doctor.id|stringformat:"s" == selected_doctor_id %}selected{% endif %}>
-                                Dr. {{ doctor.get_full_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </form>
-
-            <div class="appointment-table-wrapper">
-                {% if slots %}
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Doctor</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for slot in slots %}
-                            <tr>
-                                <td>Dr. {{ slot.doctor_schedule.doctor.get_full_name }}</td>
-                                <td>{{ slot.date|date:"Y-m-d" }}</td>
-                                <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
-                                <td>
-                                    <form action="{% url 'create_appointment' slot.id %}" method="post">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-med btn-solid">Book</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- ================= HEADER ================= -->
+        <header class="main-header">
+            <div class="logo-text">✚ MediFlow</div>
+            <nav>
+                <a href="{% url 'home' %}">Home</a>
+                <a href="#features">Features</a>
+                <a href="#solutions">Solutions</a>
+                {% if not user.is_authenticated %}
+                    <a href="{% url 'login' %}" class="nav-link">Login</a>
+                    <a href="{% url 'register' %}" class="btn-med btn-solid">Get Started</a>
                 {% else %}
-                    <p class="no-slots">No available slots for the selected doctor.</p>
+                    <div class="user-menu">
+                        <a href="{% url 'profile' %}" class="user-info">
+                            {% if user.profile.image %}
+                                <img src="{{ user.profile.image.url }}" alt="User Photo" class="avatar">
+                            {% else %}
+                                <img src="{% static 'img/default-avatar.png' %}" alt="User Photo" class="avatar">
+                            {% endif %}
+                            <span class="username">{{ user.username }}</span>
+                        </a>
+                        <form action="{% url 'logout' %}" method="post" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-med btn-outline">Logout</button>
+                        </form>
+                    </div>
                 {% endif %}
+            </nav>
+        </header>
+
+        <!-- ================= APPOINTMENT CONTENT ================= -->
+        <main class="content-section">
+            <div class="glass-card">
+                <h2>Book an Appointment</h2>
+
+                <p>Available Slots: {{ slots.paginator.count }}</p>
+                <p>Total Doctors: {{ doctors.count }}</p>
+
+                <!-- ================= DOCTOR FILTER ================= -->
+                <form method="get" class="med-form">
+                    <div class="form-group">
+                        <label for="doctor">Select Doctor</label>
+                        <select name="doctor_id" id="doctor" onchange="this.form.submit()">
+                            <option value="">-- Select a doctor --</option>
+                            {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}" {% if doctor.id|stringformat:"s" == selected_doctor_id %}selected{% endif %}>
+                                    Dr. {{ doctor.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+
+                <!-- ================= AVAILABLE SLOTS ================= -->
+                <div class="appointment-table-wrapper">
+                    {% if slots %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in slots %}
+                                    <tr>
+                                        <td>Dr. {{ slot.doctor_schedule.doctor.get_full_name }}</td>
+                                        <td>{{ slot.date|date:"Y-m-d" }}</td>
+                                        <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
+                                        <td>
+                                            <form action="{% url 'create_appointment' slot.id %}" method="post">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn-med btn-solid">Book</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- ================= PAGINATION ================= -->
+                        {% if slots.has_other_pages %}
+                            <div class="pagination" style="margin-top: 15px; display:flex; justify-content:center; gap:10px;">
+                                {% if slots.has_previous %}
+                                    <a href="?page={{ slots.previous_page_number }}{% if selected_doctor_id %}&doctor_id={{ selected_doctor_id }}{% endif %}">Previous</a>
+                                {% endif %}
+
+                                <span>Page {{ slots.number }} of {{ slots.paginator.num_pages }}</span>
+
+                                {% if slots.has_next %}
+                                    <a href="?page={{ slots.next_page_number }}{% if selected_doctor_id %}&doctor_id={{ selected_doctor_id }}{% endif %}">Next</a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p class="no-slots">No available slots for the selected doctor.</p>
+                    {% endif %}
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
 
-    <!-- ================= FOOTER ================= -->
-    <footer class="main-footer">
-        <p>© {% now "Y" %} MediFlow</p>
-        <p>Smart, Secure, Scalable Clinic Management.</p>
-    </footer>
+        <!-- ================= FOOTER ================= -->
+        <footer class="main-footer">
+            <p>© {% now "Y" %} MediFlow</p>
+            <p>Smart, Secure, Scalable Clinic Management.</p>
+        </footer>
 
-</div>
+    </div>
 </body>
 </html>
