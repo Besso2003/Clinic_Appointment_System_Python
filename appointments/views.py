@@ -421,7 +421,6 @@ from django.db.models import Q
 @login_required
 @handle_errors
 def list_doctor_appointments(request):
-
     if request.user.role != "D":
         raise PermissionError("Only Doctors Are Allowed")
 
@@ -436,13 +435,10 @@ def list_doctor_appointments(request):
 
     if status:
         appointments = appointments.filter(status=status)
-
     if start_date:
         appointments = appointments.filter(slot__date__gte=start_date)
-
     if end_date:
         appointments = appointments.filter(slot__date__lte=end_date)
-
     if search:
         appointments = appointments.filter(
             Q(id__icontains=search) |
@@ -450,10 +446,17 @@ def list_doctor_appointments(request):
             Q(patient__last_name__icontains=search)
         )
 
+    # Sort appointments
     appointments = appointments.order_by("slot__date", "slot__start_time")
 
+    # --- Pagination ---
+    paginator = Paginator(appointments, 7)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "appointments/doctor_list.html", {
-        "appointments": appointments
+        "appointments": page_obj,
+        "current_status": status
     })
 
 ## done

@@ -8,6 +8,33 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* ================= PAGINATION ================= */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .pagination span {
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
@@ -37,7 +64,6 @@
             </nav>
         </header>
 
-        <!-- ================= APPOINTMENTS ================= -->
         <!-- ================= APPOINTMENTS ================= -->
         <main class="content-section">
             <div class="glass-card">
@@ -118,6 +144,22 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <!-- ================= PAGINATION ================= -->
+                {% if appointments.has_other_pages %}
+                <div class="pagination">
+                    {% if appointments.has_previous %}
+                    <a
+                        href="?page={{ appointments.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                    {% endif %}
+
+                    <span>Page {{ appointments.number }} of {{ appointments.paginator.num_pages }}</span>
+
+                    {% if appointments.has_next %}
+                    <a
+                        href="?page={{ appointments.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                    {% endif %}
+                </div>
+                {% endif %}
                 {% else %}
                 <p>No appointments for this status.</p>
                 {% endif %}
