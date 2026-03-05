@@ -6,8 +6,8 @@ from django.http import HttpResponseForbidden
 from django.db import transaction
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.utils import timezone
 from .models import Appointment, Slot, AppointmentRescheduleHistory
+from django.db.models import Q
 
 # appointments/views.py
 # from django.shortcuts import get_object_or_404, HttpResponse
@@ -104,21 +104,28 @@ def mark_as_completed(request, appointment_id):
 @login_required
 @handle_errors
 def show_create_appointment_form(request):
+
     if request.user.role != "P":
         raise PermissionError("Only Patients Are Allowed")
 
-
-    # Optional: filter by doctor via GET parameter
     doctor_id = request.GET.get("doctor_id")
 
-    slots = Slot.objects.filter(is_available=True).select_related('doctor_schedule__doctor')
+    today = timezone.localdate()
+    now_time = timezone.localtime().time()
+
+    slots = Slot.objects.filter(
+        is_available=True
+    ).filter(
+        Q(date__gt=today) | Q(date=today, start_time__gt=now_time)
+    ).select_related(
+        "doctor_schedule__doctor"
+    )
+
     if doctor_id:
         slots = slots.filter(doctor_schedule__doctor_id=doctor_id)
 
-    slots = slots.order_by("date", "start_time") 
+    slots = slots.order_by("date", "start_time")
 
-
-    # Get all doctors for dropdown
     from django.contrib.auth import get_user_model
     User = get_user_model()
     doctors = User.objects.filter(role="D")
@@ -128,6 +135,7 @@ def show_create_appointment_form(request):
         "doctors": doctors,
         "selected_doctor_id": doctor_id
     }
+
     return render(request, "appointments/create_appointment.html", context)
 
 ## done
@@ -448,11 +456,16 @@ def show_reschedule_form(request, appointment_id):
     if appointment.status not in ["REQUESTED", "CONFIRMED"]:
         raise ValidationError("Only REQUESTED or CONFIRMED appointments can be rescheduled.")
 
+    today = timezone.localdate()
+    now_time = timezone.localtime().time()
+
     available_slots = Slot.objects.filter(
         is_available=True,
         doctor_schedule__doctor=appointment.doctor
+    ).filter(
+        Q(date__gt=today) | Q(date=today, start_time__gt=now_time)
     ).exclude(
-        id=appointment.slot.id  # prevent selecting same slot
+        id=appointment.slot.id
     ).select_related(
         "doctor_schedule"
     ).order_by("date", "start_time")
