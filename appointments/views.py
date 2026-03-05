@@ -447,24 +447,52 @@ def list_doctor_appointments(request):
 @login_required
 @handle_errors
 def list_today_appointments(request):
+
     if request.user.role != "R":
         raise PermissionError("Only Receptionists Are Allowed")
-
 
     today = timezone.now().date()
     weekday_number = today.weekday()
 
     appointments = Appointment.objects.filter(
         slot__doctor_schedule__day_of_week=weekday_number
-    ).select_related("patient", "doctor", "slot").order_by(
-        "slot__date", "slot__start_time"
+    ).select_related(
+        "patient", "doctor", "slot"
     )
 
-    status_filter = request.GET.get('status')
-    if status_filter == "pending":
-        appointments = appointments.filter(status__in=['REQUESTED', 'CONFIRMED'])
-    elif status_filter == "checked_in":
-        appointments = appointments.filter(status='CHECKED_IN')
+    # GET parameters
+    status = request.GET.get("status")
+    doctor = request.GET.get("doctor")
+    patient = request.GET.get("patient")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    search = request.GET.get("search")
+
+    # Filters
+    if status:
+        appointments = appointments.filter(status=status)
+
+    if doctor:
+        appointments = appointments.filter(doctor_id=doctor)
+
+    if patient:
+        appointments = appointments.filter(patient_id=patient)
+
+    if start_date:
+        appointments = appointments.filter(slot__date__gte=start_date)
+
+    if end_date:
+        appointments = appointments.filter(slot__date__lte=end_date)
+
+    if search:
+        appointments = appointments.filter(
+            Q(id__icontains=search) |
+            Q(patient__first_name__icontains=search) |
+            Q(patient__last_name__icontains=search)
+        )
+
+    appointments = appointments.order_by("slot__date", "slot__start_time")
+
     return render(request, "appointments/receptionist_list_appointments.html", {
         "appointments": appointments
     })
