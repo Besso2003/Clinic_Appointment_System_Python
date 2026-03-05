@@ -8,20 +8,13 @@ from django.utils import timezone
 from django.core.exceptions import PermissionDenied, ValidationError
 from .models import Appointment, Slot, AppointmentRescheduleHistory
 from django.db.models import Q
-
-# appointments/views.py
-# from django.shortcuts import get_object_or_404, HttpResponse
 from django.contrib.auth.decorators import user_passes_test
-# from django.db import transaction
 from scheduling.models import DoctorSchedule
-from scheduling.services import generate_slots_for_schedule  # import your function
+from scheduling.services import generate_slots_for_schedule
 
 
 def is_admin(user):
-    return user.is_superuser  # or you can use another permission check
-
-from django.shortcuts import render
-from django.core.exceptions import ValidationError
+    return user.is_superuser
 
 def handle_errors(view_func):
     def wrapper(request, *args, **kwargs):
@@ -44,7 +37,6 @@ def handle_errors(view_func):
             })
 
     return wrapper
-
 
 def get_home_url(request):
     if request.user.is_authenticated:
@@ -407,10 +399,12 @@ def list_patient_appointments(request):
 
     return render(request, "appointments/patient_list.html", {
         "appointments": appointments,
-        "current_status": status_filter  # optional (useful for highlighting active button)
+        "current_status": status_filter
     })
 
 ## done
+from django.db.models import Q
+
 @login_required
 @handle_errors
 def list_doctor_appointments(request):
@@ -418,17 +412,35 @@ def list_doctor_appointments(request):
     if request.user.role != "D":
         raise PermissionError("Only Doctors Are Allowed")
 
-
-    status_filter = request.GET.get("status", "REQUESTED")
-
     appointments = Appointment.objects.filter(
-        doctor=request.user,
-        status=status_filter
+        doctor=request.user
     ).select_related("patient", "slot")
 
+    status = request.GET.get("status")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    search = request.GET.get("search")
+
+    if status:
+        appointments = appointments.filter(status=status)
+
+    if start_date:
+        appointments = appointments.filter(slot__date__gte=start_date)
+
+    if end_date:
+        appointments = appointments.filter(slot__date__lte=end_date)
+
+    if search:
+        appointments = appointments.filter(
+            Q(id__icontains=search) |
+            Q(patient__first_name__icontains=search) |
+            Q(patient__last_name__icontains=search)
+        )
+
+    appointments = appointments.order_by("slot__date", "slot__start_time")
+
     return render(request, "appointments/doctor_list.html", {
-        "appointments": appointments,
-        "current_status": status_filter
+        "appointments": appointments
     })
 
 ## done
