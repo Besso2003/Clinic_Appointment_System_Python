@@ -391,9 +391,9 @@ def list_today_appointments(request):
 @login_required
 @handle_errors
 def show_reschedule_form(request, appointment_id):
-    
-    if request.user.role != "R":
-        raise PermissionError("Only Receptionists Are Allowed")
+
+    # if request.user.role != "R":
+    #     raise PermissionError("Only Receptionists Are Allowed")
 
     appointment = get_object_or_404(
         Appointment,
@@ -410,3 +410,4 @@ def show_reschedule_form(request, appointment_id):
         "appointment": appointment,
         "slots": available_slots
     })
+
