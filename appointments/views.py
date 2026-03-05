@@ -20,16 +20,41 @@ from scheduling.services import generate_slots_for_schedule  # import your funct
 def is_admin(user):
     return user.is_superuser  # or you can use another permission check
 
+from django.shortcuts import render
+from django.core.exceptions import ValidationError
+
 def handle_errors(view_func):
     def wrapper(request, *args, **kwargs):
         try:
             return view_func(request, *args, **kwargs)
+
         except (PermissionError, ValueError, ValidationError) as e:
-            return render(request, "appointments/error.html", {"error_message": str(e)})
+            home_url = get_home_url(request)
+            return render(request, "appointments/error.html", {
+                "error_message": str(e),
+                "home_url": home_url
+            })
+
         except Exception as e:
             print(f"Unexpected error: {e}")
-            return render(request, "appointments/error.html", {"error_message": "Something went wrong. Please try again later."})
+            home_url = get_home_url(request)
+            return render(request, "appointments/error.html", {
+                "error_message": "Something went wrong. Please try again later.",
+                "home_url": home_url
+            })
+
     return wrapper
+
+
+def get_home_url(request):
+    if request.user.is_authenticated:
+        if request.user.role == "R":
+            return "receptionist"
+        elif request.user.role == "D":
+            return "doctor"
+        elif request.user.role == "P":
+            return "patient"
+    return "login"
 
 @login_required
 # @user_passes_test(is_admin)
@@ -437,6 +462,11 @@ def list_today_appointments(request):
 @handle_errors
 def show_reschedule_form(request, appointment_id):
 
+
+    # if request.user.role != "R":
+    #     raise PermissionError("Only Receptionists Are Allowed")
+
+
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
     user = request.user
@@ -469,3 +499,4 @@ def show_reschedule_form(request, appointment_id):
         "appointment": appointment,
         "slots": available_slots
     })
+

@@ -1,24 +1,54 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Error | MediFlow</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <style>
-        body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 0; }
-        .error-container { max-width: 600px; margin: 100px auto; padding: 30px; background: #fff; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
-        h1 { color: #dc3545; font-size: 2em; margin-bottom: 20px; }
-        p { font-size: 1.2em; color: #555; }
-        a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #007bff; color: #fff; border-radius: 5px; text-decoration: none; }
-        a:hover { background: #0056b3; }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f9f9f9;
+        margin: 0;
+        padding: 0;
+      }
+      .error-container {
+        max-width: 600px;
+        margin: 100px auto;
+        padding: 30px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      h1 {
+        color: #dc3545;
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+      p {
+        font-size: 1.2em;
+        color: #555;
+      }
+      a {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #007bff;
+        color: #fff;
+        border-radius: 5px;
+        text-decoration: none;
+      }
+      a:hover {
+        background: #0056b3;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="error-container">
-        <h1>Oops! An Error Occurred</h1>
-        <p>{{ error_message }}</p>
-        <a href="{% url 'receptionist' %}">Go Back Home</a>
+      <h1>Oops! An Error Occurred</h1>
+      <p>{{ error_message }}</p>
+      <a href="{% url home_url %}">Go Back Home</a>
     </div>
-</body>
+  </body>
 </html>
