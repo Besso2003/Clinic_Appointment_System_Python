@@ -40,7 +40,7 @@
     <main class="content-section">
 
         <div class="glass-card">
-                {% block content %}
+            {% block content %}
 
             <h2>Reschedule Appointment</h2>
 
@@ -58,6 +58,17 @@
                         {{ appointment.get_status_display }}
                     </span>
                 </p>
+            </div>
+
+            <!-- Reason Field -->
+            <div class="feature-card" style="margin-bottom: 30px;">
+                <h3>Reason for Rescheduling</h3>
+                <textarea id="reschedule-reason"
+                          name="reason"
+                          placeholder="Enter reason for rescheduling (optional)"
+                          rows="3"
+                          style="width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; font-family:'Sora', sans-serif;">
+                </textarea>
             </div>
 
             <!-- Available Slots -->
@@ -83,8 +94,10 @@
                                 </td>
                                 <td>
                                     <form method="POST"
-                                          action="{% url 'reschedule_appointment' appointment.id slot.id %}">
+                                          action="{% url 'reschedule_appointment' appointment.id slot.id %}"
+                                          onsubmit="attachReason(this)">
                                         {% csrf_token %}
+                                        <input type="hidden" name="reason">
                                         <button type="submit"
                                                 class="btn-med btn-solid confirm">
                                             Select
@@ -108,8 +121,8 @@
                 </a>
             </div>
 
-        </div>
             {% endblock %}
+        </div>
 
     </main>
 
@@ -120,5 +133,14 @@
     </footer>
 
 </div>
+
+<!-- Script to Attach Reason to Selected Slot -->
+<script>
+function attachReason(form) {
+    const reason = document.getElementById("reschedule-reason").value.trim();
+    form.querySelector("input[name='reason']").value = reason;
+}
+</script>
+
 </body>
 </html>
