@@ -41,20 +41,44 @@
         <!-- ================= APPOINTMENTS ================= -->
         <main class="content-section">
             <div class="glass-card">
+                <form method="get" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
+
+                    <input type="text" name="search" placeholder="Search by appointment ID or patient name"
+                        value="{{ request.GET.search }}" class="input-field">
+
+                    <input type="date" name="start_date" value="{{ request.GET.start_date }}" class="input-field">
+
+                    <input type="date" name="end_date" value="{{ request.GET.end_date }}" class="input-field">
+
+                    <button type="submit" class="btn-med btn-solid">
+                        Search
+                    </button>
+
+                </form>
                 <h2>Doctor Appointments</h2>
 
                 <!-- ================= STATUS TABS ================= -->
                 <div class="edit-toggle-row" style="margin-bottom: 20px;">
+
+                    <!-- ALL -->
+                    <a href="{% url 'list_doctor_appointments' %}"
+                        class="btn-med {% if not request.GET.status %}btn-solid{% else %}btn-outline{% endif %}">
+                        All
+                    </a>
+
+                    <!-- REQUESTED -->
                     <a href="{% url 'list_doctor_appointments' %}?status=REQUESTED"
-                        class="btn-med {% if request.GET.status == 'REQUESTED' or not request.GET.status %}btn-solid{% else %}btn-outline{% endif %}">
+                        class="btn-med {% if request.GET.status == 'REQUESTED' %}btn-solid{% else %}btn-outline{% endif %}">
                         Requested
                     </a>
+
+                    <!-- CONFIRMED -->
                     <a href="{% url 'list_doctor_appointments' %}?status=CONFIRMED"
                         class="btn-med {% if request.GET.status == 'CONFIRMED' %}btn-solid{% else %}btn-outline{% endif %}">
                         Confirmed
                     </a>
-                </div>
 
+                </div>
                 {% if appointments %}
                 <table class="table">
                     <thead>
@@ -71,7 +95,8 @@
                         <tr>
                             <td>{{ appointment.patient.get_full_name }}</td>
                             <td>{{ appointment.slot.date|date:"Y-m-d" }}</td>
-                            <td>{{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i" }}</td>
+                            <td>{{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i"}}
+                            </td>
                             <td>{{ appointment.status }}</td>
                             <td class="edit-toggle-row">
                                 {% if appointment.status == "REQUESTED" %}
