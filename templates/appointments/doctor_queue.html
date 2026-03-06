@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>MediFlow | Doctor Queue</title>
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/appointments.css' %}">
+<style>
+/* ================= TABLE ================= */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.table th,
+.table td {
+    padding: 16px 20px; /* increased padding for better spacing */
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.table th {
+    background: #f8fafc;
+    font-weight: 600;
+}
+
+.table tr:hover {
+    background: #f9fafb;
+}
+
+/* Optional: make the "Waiting" column a bit narrower */
+.table td:nth-child(5) {
+    width: 120px;
+}
+
+/* ================= BUTTONS ================= */
+.btn-med {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-solid {
+    background-color: #2563eb;
+    color: #fff;
+}
+
+.btn-solid:hover {
+    background-color: #1d4ed8;
+}
+</style>
+</head>
+
+<body>
+<div class="page-wrapper">
+
+<header class="main-header">
+<div class="logo-text">✚ MediFlow</div>
+</header>
+
+<main class="content-section">
+
+<div class="glass-card">
+<h2>Today's Queue</h2>
+
+<form method="POST" action="{% url 'call_next_patient' %}">
+{% csrf_token %}
+<button class="btn-med btn-solid">Call Next Patient</button>
+</form>
+
+<br>
+
+{% if queue %}
+
+<table class="table">
+<thead>
+<tr>
+<th>#</th>
+<th>Patient</th>
+<th>Time</th>
+<th>Checked In</th>
+<th>Waiting</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for appt in queue %}
+
+<tr class="clickable-row">
+
+<td>{{ forloop.counter }}</td>
+
+<td>{{ appt.patient.get_full_name }}</td>
+
+<td>
+{{ appt.slot.start_time|time:"H:i" }}
+</td>
+
+<td>
+{{ appt.check_in_time|time:"H:i" }}
+</td>
+
+<td>
+{{ appt.check_in_time|timesince }} ago
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+{% else %}
+
+<p class="no-slots">No patients in queue.</p>
+
+{% endif %}
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

@@ -83,8 +83,8 @@
         <ul>
             <li><a href="{% url 'doctor' %}" class="active">Dashboard</a></li>
             <li><a href="{% url 'list_doctor_appointments' %}">My Appointments</a></li>
-            <li><a href="#">Patients</a></li>
-            <li><a href="#">Schedule</a></li>
+            <!-- <li><a href="#">Patients</a></li> -->
+            <li><a href="{% url 'schedule-create' %}">Schedule</a></li>
             <li><a href="{% url 'profile' %}">Profile</a></li>
             <li>
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">

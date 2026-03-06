@@ -1,0 +1,39 @@
+<h2>Clinic Queue</h2>
+
+<table class="table">
+
+<thead>
+<tr>
+<th>#</th>
+<th>Patient</th>
+<th>Doctor</th>
+<th>Appointment</th>
+<th>Checked In</th>
+<th>Waiting</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for appt in appointments %}
+
+<tr class="clickable-row">
+
+<td>{{ forloop.counter }}</td>
+
+<td>{{ appt.patient.get_full_name }}</td>
+
+<td>Dr. {{ appt.doctor.get_full_name }}</td>
+
+<td>{{ appt.slot.start_time|time:"H:i" }}</td>
+
+<td>{{ appt.check_in_time|time:"H:i" }}</td>
+
+<td>{{ appt.check_in_time|timesince }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
