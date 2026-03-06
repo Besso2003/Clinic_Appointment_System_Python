@@ -407,6 +407,17 @@ def doctor_queue(request):
         "queue": queue
     })
 
+
+def get_today_queue():
+    today = timezone.localdate()
+    queue = Appointment.objects.filter(
+        slot__date=today,
+        status="CHECKED_IN"
+    ).select_related(
+        "patient", "doctor", "slot"
+    ).order_by("check_in_time")
+    return queue
+
 @login_required
 def receptionist_queue(request):
 
