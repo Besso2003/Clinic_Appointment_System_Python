@@ -233,6 +233,12 @@ Search
                                     {% csrf_token %}
                                     <button type="submit" class="btn-med btn-outline cancel">Cancel</button>
                                 </form>
+                                 {% elif appointment.status == "CHECKED_IN" %}
+                                <!-- Complete button -->
+                                <form method="post" action="{% url 'mark_as_completed' appointment.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-med btn-solid">Complete</button>
+                                </form>
                                 {% else %}
                                 <span class="badge">{{ appointment.status }}</span>
                                 {% endif %}

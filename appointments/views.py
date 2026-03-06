@@ -1,9 +1,11 @@
 import datetime
+from urllib import request
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseForbidden
 from django.db import transaction
+from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied, ValidationError
 from .models import Appointment, Slot, AppointmentRescheduleHistory
@@ -109,15 +111,15 @@ def mark_as_completed(request, appointment_id):
     if appointment.doctor != request.user:
         raise PermissionError("You are not allowed")
 
-    if appointment.status != "CONFIRMED":
-        raise ValidationError("Appointment must be confirmed first.")
+    if appointment.status != "CHECKED_IN":
+        raise ValidationError("Appointment must be checked in first.")
     
     appointment.status = "COMPLETED"
     appointment.updated_at = timezone.now()
     appointment.save()
 
-    return HttpResponse("Appointment marked as completed successfully.")
-
+    next_url = request.META.get('HTTP_REFERER', reverse('list_doctor_appointments'))
+    return redirect(next_url)
 ## done
 @login_required
 @handle_errors
@@ -389,19 +391,31 @@ def mark_as_checked_in(request, appointment_id):
 
     return redirect("list_today_appointments")
 
+# @login_required
+# def doctor_queue(request):
+
+#     if request.user.role != "D":
+#         raise PermissionError("Only doctors allowed.")
+
+#     today = timezone.localdate()
+
+#     queue = Appointment.objects.filter(
+#         doctor=request.user,
+#         slot__date=today,
+#         status="CHECKED_IN"
+#     ).select_related("patient", "slot").order_by("check_in_time")
+
+#     return render(request, "appointments/doctor_queue.html", {
+#         "queue": queue
+#     })
+
 @login_required
 def doctor_queue(request):
 
     if request.user.role != "D":
         raise PermissionError("Only doctors allowed.")
 
-    today = timezone.localdate()
-
-    queue = Appointment.objects.filter(
-        doctor=request.user,
-        slot__date=today,
-        status="CHECKED_IN"
-    ).select_related("patient", "slot").order_by("check_in_time")
+    queue = get_today_queue().filter(doctor=request.user)
 
     return render(request, "appointments/doctor_queue.html", {
         "queue": queue
@@ -409,21 +423,6 @@ def doctor_queue(request):
 
 
 def get_today_queue():
-    today = timezone.localdate()
-    queue = Appointment.objects.filter(
-        slot__date=today,
-        status="CHECKED_IN"
-    ).select_related(
-        "patient", "doctor", "slot"
-    ).order_by("check_in_time")
-    return queue
-
-@login_required
-def receptionist_queue(request):
-
-    if request.user.role != "R":
-        raise PermissionError("Only receptionists allowed.")
-
     today = timezone.localdate()
 
     queue = Appointment.objects.filter(
@@ -433,34 +432,79 @@ def receptionist_queue(request):
         "patient",
         "doctor",
         "slot"
-    ).order_by("doctor", "check_in_time")
+    ).order_by(
+        "slot__start_time",
+        "check_in_time"
+    )
+
+    return queue
+
+# @login_required
+# def receptionist_queue(request):
+
+#     if request.user.role != "R":
+#         raise PermissionError("Only receptionists allowed.")
+
+#     today = timezone.localdate()
+
+#     queue = Appointment.objects.filter(
+#         slot__date=today,
+#         status="CHECKED_IN"
+#     ).select_related(
+#         "patient",
+#         "doctor",
+#         "slot"
+#     ).order_by("doctor", "check_in_time")
+
+#     return render(request, "appointments/receptionist_queue.html", {
+#         "queue": queue
+#     })
+
+@login_required
+def receptionist_queue(request):
+
+    if request.user.role != "R":
+        raise PermissionError("Only receptionists allowed.")
+
+    queue = get_today_queue()
 
     return render(request, "appointments/receptionist_queue.html", {
         "queue": queue
     })
 
-
 @login_required
-@handle_errors
+@transaction.atomic
 def call_next_patient(request):
 
     if request.user.role != "D":
         raise PermissionError("Only doctors allowed.")
 
-    today = timezone.localdate()
-
-    next_patient = Appointment.objects.filter(
-        doctor=request.user,
-        slot__date=today,
-        status="CHECKED_IN"
-    ).select_related(
-        "patient","slot"
-    ).order_by("slot__start_time").first()
+    next_patient = get_today_queue().filter(
+        doctor=request.user
+    ).first()
 
     if not next_patient:
         raise ValidationError("No patients in queue.")
 
-    return redirect("appointment_details", appointment_id=next_patient.id)
+    next_patient.status = "COMPLETED" 
+    next_patient.save()
+
+    return redirect("doctor_queue")
+# @login_required
+# @transaction.atomic
+# def call_next_patient(request):
+
+#     if request.user.role != "D":
+#         raise PermissionError("Only doctors allowed.")
+
+#     next_patient = get_today_queue().filter(
+#         doctor=request.user
+#     ).first()
+
+#     if not next_patient:
+#         raise ValidationError("No patients in queue.")
+
+#     return redirect("appointment_details", appointment_id=next_patient.id)
 
 ## done
 @login_required
