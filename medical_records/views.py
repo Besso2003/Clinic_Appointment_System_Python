@@ -122,7 +122,6 @@ class ViewConsultationRecord(LoginRequiredMixin, UserPassesTestMixin, DetailView
         #print(user.id)
         #print(role)
         return (
-            role in ["A", "R"] or
             (role == "D" and appointment.doctor_id == user.id) or
             (role == "P" and appointment.patient_id == user.id)
         )
@@ -134,11 +133,16 @@ class ViewConsultationRecord(LoginRequiredMixin, UserPassesTestMixin, DetailView
             return redirect("login")
 
         role = getattr(user, "role", None)
-
-        if role == "D":
+        
+        if role == "A":
+            return redirect("admin")
+        elif role == "R":
+            return redirect("receptionist")
+        elif role == "D":
             return redirect("doctor")
         elif role == "P":
             return redirect("patient")
+
 
 class PatientMedicalHistory(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = ConsultationRecord
@@ -149,9 +153,6 @@ class PatientMedicalHistory(LoginRequiredMixin, UserPassesTestMixin, ListView):
         user = self.request.user
         patient_id = int(self.kwargs['patient_id'])
         role = getattr(user, "role", None)
-
-        if role in ["A", "R"]:
-            return True
 
         if role == "P":
             return user.id == patient_id
@@ -174,7 +175,11 @@ class PatientMedicalHistory(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
         role = getattr(user, "role", None)
 
-        if role == "D":
+        if role == "A":
+            return redirect("admin")
+        elif role == "R":
+            return redirect("receptionist")
+        elif role == "D":
             return redirect("doctor")
         elif role == "P":
             return redirect("patient")
