@@ -7,6 +7,9 @@ urlpatterns = [
     path("<int:appointment_id>/completed/", views.mark_as_completed, name="mark_as_completed"),
     path("create/<int:slot_id>/", views.create_appointment, name="create_appointment"),
     path("<int:appointment_id>/cancel/", views.cancel_appointment, name="cancel_appointment"),
+    path("<int:appointment_id>/checkin/", views.mark_as_checked_in, name="mark_as_checked_in"),
+
+
 
     # Form to show available slots and doctors
     path("create/", views.show_create_appointment_form, name="show_create_appointment_form"),
@@ -25,4 +28,7 @@ urlpatterns = [
     path('receptionist/today-appointments/', views.list_today_appointments, name='list_today_appointments'),
 
     path("appointments/<int:appointment_id>/details/", views.appointment_details, name="appointment_details"),
+    path("doctor/queue/",views.doctor_queue,name="doctor_queue"),
+    path("receptionist/queue/",views.receptionist_queue,name="receptionist_queue"),
+    path("doctor/call-next/",views.call_next_patient,name="call_next_patient"),
 ]
