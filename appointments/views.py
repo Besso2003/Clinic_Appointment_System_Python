@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import user_passes_test
 from scheduling.models import DoctorSchedule
 from scheduling.services import generate_slots_for_schedule
 from django.core.paginator import Paginator
+from django.contrib.auth import get_user_model
 
 
 def is_admin(user):
@@ -120,6 +121,7 @@ def mark_as_completed(request, appointment_id):
 
     next_url = request.META.get('HTTP_REFERER', reverse('list_doctor_appointments'))
     return redirect(next_url)
+
 ## done
 @login_required
 @handle_errors
@@ -148,7 +150,6 @@ def show_create_appointment_form(request):
 
     slots = slots.order_by("date", "start_time")
 
-    # Pagination: 10 slots per page
     paginator = Paginator(slots, 10)
     page_obj = paginator.get_page(page_number)
 
@@ -158,7 +159,7 @@ def show_create_appointment_form(request):
     doctors = User.objects.filter(role="D")
 
     context = {
-        "slots": page_obj,  # paginated slots
+        "slots": page_obj,
         "doctors": doctors,
         "selected_doctor_id": doctor_id,
         "paginator": paginator,

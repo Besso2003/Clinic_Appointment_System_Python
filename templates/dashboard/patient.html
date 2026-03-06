@@ -78,6 +78,20 @@
       box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.25);
       opacity: 1;
     }
+
+    .main-footer {
+      margin-top: 40px;
+      padding: 20px;
+      text-align: center;
+      background: #f8fafc;
+      border-top: 1px solid #e5e7eb;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .main-footer p {
+      margin: 4px 0;
+    }
   </style>
 </head>
 
@@ -149,22 +163,22 @@
 
           <div class="filter-container">
             <a href="{% url 'list_patient_appointments' %}?status=REQUESTED"
-               class="filter-btn filter-requested {% if current_status == 'REQUESTED' %}active{% endif %}">
+              class="filter-btn filter-requested {% if current_status == 'REQUESTED' %}active{% endif %}">
               Requested
             </a>
 
             <a href="{% url 'list_patient_appointments' %}?status=CONFIRMED"
-               class="filter-btn filter-confirmed {% if current_status == 'CONFIRMED' %}active{% endif %}">
+              class="filter-btn filter-confirmed {% if current_status == 'CONFIRMED' %}active{% endif %}">
               Confirmed
             </a>
 
             <a href="{% url 'list_patient_appointments' %}?status=CANCELLED"
-               class="filter-btn filter-cancelled {% if current_status == 'CANCELLED' %}active{% endif %}">
+              class="filter-btn filter-cancelled {% if current_status == 'CANCELLED' %}active{% endif %}">
               Cancelled
             </a>
 
             <a href="{% url 'list_patient_appointments' %}"
-               class="filter-btn filter-all {% if not current_status %}active{% endif %}">
+              class="filter-btn filter-all {% if not current_status %}active{% endif %}">
               All
             </a>
           </div>
@@ -199,7 +213,8 @@
               </td>
               <td>
                 {% if appointment.status != "CANCELLED" %}
-                <a href="{% url 'cancel_appointment' appointment.id %}" class="filter-btn filter-cancelled" style="padding:5px 10px; font-size:12px;">
+                <a href="{% url 'cancel_appointment' appointment.id %}" class="filter-btn filter-cancelled"
+                  style="padding:5px 10px; font-size:12px;">
                   Cancel
                 </a>
                 {% endif %}
@@ -218,6 +233,13 @@
 
       </section>
     </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="main-footer">
+      <p>© {% now "Y" %} MediFlow</p>
+      <p>Smart, Secure, Scalable Clinic Management.</p>
+    </footer>
+
   </div>
 </body>
 

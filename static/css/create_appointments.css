@@ -1,0 +1,40 @@
+/* ================= APPOINTMENT TABLE ================= */
+
+.appointment-table-wrapper {
+    margin-top: 20px;
+}
+
+/* Table layout */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Add spacing between columns */
+.table th,
+.table td {
+    padding: 16px 30px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Header styling */
+.table thead th {
+    border-bottom: 2px solid #e6ecf5;
+    font-weight: 600;
+}
+
+/* Row styling */
+.table tbody tr {
+    border-bottom: 1px solid #e6ecf5;
+}
+
+/* Hover effect */
+.table tbody tr:hover {
+    background-color: #f8fbff;
+}
+
+/* Center the action column */
+.table td:last-child {
+    text-align: center;
+}
