@@ -2,7 +2,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from appointments.models import Appointment
-from appointments.views import list_patient_appointments
+from appointments.views import get_today_queue, list_patient_appointments
 
 # Create your views here.
 
@@ -35,7 +35,12 @@ def doctor_dashboard(request):
 
 @login_required
 def receptionist_dashboard(request):
-	return render(request, 'dashboard/receptionist.html')
+        today_queue = get_today_queue()  # just call the function
+
+        return render(request, "dashboard/receptionist.html", {
+            "today_queue": today_queue,
+        })
+	# return render(request, 'dashboard/receptionist.html')
 
 # @login_required
 # def patient_dashboard(request):

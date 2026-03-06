@@ -44,11 +44,7 @@
         <header class="header">
           <div class="header-content">
             <h1>Reception Desk: {{ user.first_name }}</h1>
-            <div class="user-info">
-              <a href="#" class="btn btn-primary" style="color: white"
-                >+ Quick Book</a
-              >
-            </div>
+       
           </div>
         </header>
 
@@ -70,42 +66,46 @@
             </div>
           </div>
 
-          <div class="card">
-            <h2>Patient Check-In Queue</h2>
-            <table class="appointments-table">
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Assigned Doctor</th>
-                  <th>Time</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for appointment in today_queue %}
-                <tr>
-                  <td>
-                    {{ appointment.patient.user.first_name }} {{
-                    appointment.patient.user.last_name }}
-                  </td>
-                  <td>Dr. {{ appointment.doctor.user.last_name }}</td>
-                  <td>{{ appointment.appointment_datetime|time:"H:i" }}</td>
-                  <td>
-                    <span class="badge badge-pending">In Waiting Room</span>
-                  </td>
-                  <td>
-                    <a href="#" class="btn btn-small">Check-In</a>
-                  </td>
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="5">Queue is currently empty.</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+         <div class="card">
+  <h2>Patient Check-In Queue</h2>
+  <table class="appointments-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Patient</th>
+        <th>Assigned Doctor</th>
+        <th>Check-In Time</th>
+        <th>Waiting</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for appt in today_queue %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ appt.patient.get_full_name }}</td>
+        <td>Dr. {{ appt.doctor.get_full_name }}</td>
+        <td>{{ appt.check_in_time|time:"H:i" }}</td>
+        <td>{{ appt.check_in_time|timesince }} ago</td>
+        <td>
+          {% if appt.status == "CONFIRMED" %}
+          <form method="post" action="{% url 'mark_as_checked_in' appt.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-small btn-solid">Check-In</button>
+          </form>
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">Queue is currently empty.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
         </section>
       </main>
     </div>
