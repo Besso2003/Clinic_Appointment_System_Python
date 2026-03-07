@@ -66,36 +66,40 @@ def generate_slots_view(request, schedule_id):
     
     return HttpResponse(f"Slots generated successfully for schedule {schedule.id}.")
 
-# Read about select_for_update()
-
+## need to test
 @login_required
-# require the standard Django permission; groups created by create_groups.py
-# assign this codename to receptionists so has_perm() will succeed automatically
-@permission_required('appointments.change_appointment', raise_exception=True)
 @transaction.atomic
 @handle_errors
 def mark_as_no_show(request, appointment_id):
 
-    if not request.user.groups.filter(name="Receptionist").exists():
-        raise PermissionError("Only Receptionists can mark no show.")
+    # Only Doctor or Receptionist allowed
+    if request.user.role not in ["D", "R"]:
+        raise PermissionError("Only doctor or receptionist allowed.")
 
     appointment = get_object_or_404(
         Appointment.objects.select_for_update(),
         id=appointment_id
     )
 
-    if appointment.status not in ["CONFIRMED"]:
+    # If doctor, ensure it is their appointment
+    if request.user.role == "D" and appointment.doctor != request.user:
+        raise PermissionError("You are not allowed.")
+
+    if appointment.status != "CONFIRMED":
         raise ValidationError("Appointment must be confirmed first.")
 
     appointment.status = "NO_SHOW"
+    appointment.updated_at = timezone.now()
     appointment.save()
 
+    # Free the slot again
     appointment.slot.is_available = True
     appointment.slot.save()
 
-    return HttpResponse("Appointment marked as no show successfully.")
+    next_url = request.META.get('HTTP_REFERER', reverse('list_today_appointments'))
+    return redirect(next_url)
 
-## NOT YET
+## done
 @login_required
 @transaction.atomic
 @handle_errors
@@ -347,13 +351,12 @@ def confirm_appointment(request, appointment_id):
     appointment.status = "CONFIRMED"
     appointment.save()
 
-    # return redirect("list_today_appointments")
-    if request.user.role == "P":
-        return redirect('patient')
-    elif request.user.role == "R":
+    # if request.user.role == "P":
+    #     return redirect('patient')
+    if request.user.role == "R":
         return redirect('list_today_appointments')
     elif request.user.role == "D":
-        return redirect('doctor')
+        return redirect('list_doctor_appointments')
 
 ## NOT YET
 @login_required

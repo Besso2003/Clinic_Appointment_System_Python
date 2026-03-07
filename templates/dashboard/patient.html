@@ -198,13 +198,10 @@
             {% for appointment in appointments %}
             <tr>
               <td>
-                <strong>
-                  Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}
-                </strong>
+                <strong>Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</strong>
               </td>
               <td>
-                {{ appointment.slot.date|date:"M d, Y" }}
-                at {{ appointment.slot.start_time|time:"H:i" }}
+                {{ appointment.slot.date|date:"M d, Y" }} at {{ appointment.slot.start_time|time:"H:i" }}
               </td>
               <td>
                 <span class="badge badge-{{ appointment.status|lower }}">
@@ -212,7 +209,7 @@
                 </span>
               </td>
               <td>
-                {% if appointment.status != "CANCELLED" %}
+                {% if appointment.status == "REQUESTED" or appointment.status == "CONFIRMED" %}
                 <a href="{% url 'cancel_appointment' appointment.id %}" class="filter-btn filter-cancelled"
                   style="padding:5px 10px; font-size:12px;">
                   Cancel
@@ -225,9 +222,7 @@
         </table>
         {% else %}
         <div style="text-align: center; padding: 40px">
-          <p class="text-muted">
-            No appointments found for this filter.
-          </p>
+          <p class="text-muted">No appointments found for this filter.</p>
         </div>
         {% endif %}
 
