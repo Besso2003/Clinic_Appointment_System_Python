@@ -31,9 +31,6 @@ urlpatterns = [
     path("doctor/queue/",views.doctor_queue,name="doctor_queue"),
     path("receptionist/queue/",views.receptionist_queue,name="receptionist_queue"),
     path("doctor/call-next/",views.call_next_patient,name="call_next_patient"),
-    path(
-    "queue/call-next/",
-    views.call_next_patient,
-    name="call_next_patient"
+    path("queue/call-next/",views.call_next_patient,name="call_next_patient"
 ),
 ]

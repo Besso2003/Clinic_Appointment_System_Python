@@ -5,61 +5,35 @@
 <head>
     <meta charset="UTF-8">
     <title>MediFlow | Doctor Appointments</title>
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+
     <style>
-        /* ================= PAGINATION ================= */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #f4f6f8;
         }
 
-        .pagination a {
-            padding: 6px 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-decoration: none;
-            color: #333;
-            transition: all 0.2s;
+        .glass-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,.05);
+            margin: 20px;
         }
 
-        .pagination a:hover {
-            background-color: #f0f0f0;
+        h2 {
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #111827;
         }
 
-        .pagination span {
-            font-weight: 600;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th,
-        .table td {
-            padding: 12px 18px;
-            text-align: left;
-        }
-
-        .table th {
-            font-weight: 600;
-            border-bottom: 2px solid #eee;
-        }
-
-        .table td {
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        /* ===== SEARCH BAR ===== */
-
+        /* Search Bar */
         .search-bar {
             margin-bottom: 25px;
-            padding: 15px;
+            padding: 18px;
             background: #f8fafc;
             border-radius: 10px;
             border: 1px solid #e5e7eb;
@@ -67,7 +41,7 @@
 
         .search-form {
             display: flex;
-            align-items: end;
+            align-items: flex-end;
             gap: 15px;
             flex-wrap: wrap;
         }
@@ -75,7 +49,7 @@
         .search-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
 
         .search-group label {
@@ -84,15 +58,17 @@
             color: #555;
         }
 
-        .search-group input {
+        .search-group input,
+        .search-group select {
             padding: 9px 12px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-family: 'Sora', sans-serif;
-            min-width: 180px;
+            min-width: 160px;
         }
 
-        .search-group input:focus {
+        .search-group input:focus,
+        .search-group select:focus {
             outline: none;
             border-color: #2563eb;
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
@@ -113,182 +89,239 @@
             background: #1d4ed8;
         }
 
-        /* Clickable row effect */
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 18px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        /* Clickable Row */
         .clickable-row {
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            transition: background-color .2s, transform .1s, box-shadow .2s;
         }
 
         .clickable-row:hover {
             background-color: #f1f1f1;
             cursor: pointer;
             transform: scale(1.01);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,.1);
         }
 
-        /* Keep buttons/forms inside row clickable */
         .clickable-row a,
         .clickable-row button,
         .clickable-row form {
             pointer-events: auto;
         }
+
+        /* Badges */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            text-transform: capitalize;
+        }
+
+        .badge.requested { background:#f59e0b; }
+        .badge.confirmed { background:#2563eb; }
+        .badge.checked_in { background:#10b981; }
+        .badge.no_show { background:#6b7280; }
+        .badge.cancelled { background:#ef4444; }
+        .badge.completed { background:#22c55e; }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            margin-right: 5px;
+        }
+
+        .action-btn.confirm { background:#22c55e; color:white; }
+        .action-btn.cancel { border:1px solid #ef4444; color:#ef4444; background:white; }
+        .action-btn.checkin { background:#2563eb; color:white; }
+        .action-btn.noshow { border:1px solid #6b7280; color:#6b7280; background:white; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .pagination span {
+            font-weight: 600;
+        }
     </style>
 </head>
 
 <body>
-    <div class="page-wrapper">
+<div class="page-wrapper">
 
-        <!-- ================= HEADER ================= -->
-        <header class="main-header">
-            <div class="logo-text">✚ MediFlow</div>
-            <nav>
-                <a href="{% url 'doctor' %}">Home</a>
-                {% if user.is_authenticated %}
-                <div class="user-menu">
-                    <a href="{% url 'profile' %}" class="user-info">
-                        {% if user.profile_picture %}
-                        <img src="{{ user.profile_picture.url }}" alt="User Photo" class="avatar">
-                        {% else %}
-                        <img src="{% static 'img/default-avatar.png' %}" alt="User Photo" class="avatar">
-                        {% endif %}
-                        <span class="username">{{ user.username }}</span>
-                    </a>
-                    <form action="{% url 'logout' %}" method="post" class="logout-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-med btn-outline">Logout</button>
-                    </form>
-                </div>
-                {% endif %}
-            </nav>
-        </header>
-
-        <!-- ================= APPOINTMENTS ================= -->
-        <main class="content-section">
-            <div class="glass-card">
-                <div class="search-bar">
-
-                    <form method="get" class="search-form">
-
-                        <div class="search-group">
-                            <input type="text" name="search" placeholder="🔎 Patient name or appointment ID"
-                                value="{{ request.GET.search }}">
-                        </div>
-
-                        <div class="search-group">
-                            <label>From</label>
-                            <input type="date" name="start_date" value="{{ request.GET.start_date }}">
-                        </div>
-
-                        <div class="search-group">
-                            <label>To</label>
-                            <input type="date" name="end_date" value="{{ request.GET.end_date }}">
-                        </div>
-
-                        <button type="submit" class="search-btn">
-                            Search
-                        </button>
-
-                    </form>
-
-                </div>
-                <h2>Doctor Appointments</h2>
-
-                <!-- ================= STATUS TABS ================= -->
-                <div class="edit-toggle-row" style="margin-bottom: 20px;">
-
-                    <!-- ALL -->
-                    <a href="{% url 'list_doctor_appointments' %}"
-                        class="btn-med {% if not request.GET.status %}btn-solid{% else %}btn-outline{% endif %}">
-                        All
-                    </a>
-
-                    <!-- REQUESTED -->
-                    <a href="{% url 'list_doctor_appointments' %}?status=REQUESTED"
-                        class="btn-med {% if request.GET.status == 'REQUESTED' %}btn-solid{% else %}btn-outline{% endif %}">
-                        Requested
-                    </a>
-
-                    <!-- CONFIRMED -->
-                    <a href="{% url 'list_doctor_appointments' %}?status=CONFIRMED"
-                        class="btn-med {% if request.GET.status == 'CONFIRMED' %}btn-solid{% else %}btn-outline{% endif %}">
-                        Confirmed
-                    </a>
-
-                </div>
-                {% if appointments %}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Patient</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for appointment in appointments %}
-                        <tr class="clickable-row" onclick="window.location='{% url 'appointment_details' appointment.id %}'">
-                            
-                            <td>{{ appointment.patient.get_full_name }}</td>
-                            <td>{{ appointment.slot.date|date:"Y-m-d" }}</td>
-                            <td>{{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i"}}
-                            </td>
-                            <td>{{ appointment.status }}</td>
-                            <td class="edit-toggle-row">
-                                {% if appointment.status == "REQUESTED" %}
-                                <!-- Confirm button -->
-                                <form method="post" action="{% url 'confirm_appointment' appointment.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-med btn-solid confirm">Confirm</button>
-                                </form>
-                                <!-- Cancel button -->
-                                <form method="post" action="{% url 'cancel_appointment' appointment.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-med btn-outline cancel">Cancel</button>
-                                </form>
-                                {% elif appointment.status == "CHECKED_IN" %}
-                                <!-- Complete button -->
-                                <form method="post" action="{% url 'mark_as_completed' appointment.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-med btn-solid">Complete</button>
-                                </form>
-                                {% else %}
-                                <span class="badge">{{ appointment.status }}</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <!-- ================= PAGINATION ================= -->
-                {% if appointments.has_other_pages %}
-                <div class="pagination">
-                    {% if appointments.has_previous %}
-                    <a
-                        href="?page={{ appointments.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+    <header class="main-header">
+        <div class="logo-text">✚ MediFlow</div>
+        <nav>
+            <a href="{% url 'doctor' %}">Home</a>
+            {% if user.is_authenticated %}
+            <div class="user-menu">
+                <a href="{% url 'profile' %}" class="user-info">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="avatar">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" class="avatar">
                     {% endif %}
+                    <span class="username">{{ user.username }}</span>
+                </a>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-med btn-outline">Logout</button>
+                </form>
+            </div>
+            {% endif %}
+        </nav>
+    </header>
 
-                    <span>Page {{ appointments.number }} of {{ appointments.paginator.num_pages }}</span>
+    <main class="content-section">
+        <div class="glass-card">
+            <h2>Doctor Appointments</h2>
 
-                    {% if appointments.has_next %}
-                    <a
-                        href="?page={{ appointments.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
-                    {% endif %}
-                </div>
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <form method="get" class="search-form">
+                    <div class="search-group">
+                        <input type="text" name="search" placeholder="🔎 Patient name or appointment ID" value="{{ request.GET.search }}">
+                    </div>
+
+                    <div class="search-group">
+                        <label>From</label>
+                        <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+                    </div>
+
+                    <div class="search-group">
+                        <label>To</label>
+                        <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+                    </div>
+
+                    <div class="search-group">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value="">All</option>
+                            <option value="REQUESTED" {% if request.GET.status == "REQUESTED" %}selected{% endif %}>Requested</option>
+                            <option value="CONFIRMED" {% if request.GET.status == "CONFIRMED" %}selected{% endif %}>Confirmed</option>
+                            <option value="CHECKED_IN" {% if request.GET.status == "CHECKED_IN" %}selected{% endif %}>Checked In</option>
+                            <option value="COMPLETED" {% if request.GET.status == "COMPLETED" %}selected{% endif %}>Completed</option>
+                            <option value="NO_SHOW" {% if request.GET.status == "NO_SHOW" %}selected{% endif %}>No Show</option>
+                            <option value="CANCELLED" {% if request.GET.status == "CANCELLED" %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="search-btn">Search</button>
+                </form>
+            </div>
+
+            <!-- Appointments Table -->
+            {% if appointments %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for appointment in appointments %}
+                    <tr class="clickable-row" onclick="window.location='{% url 'appointment_details' appointment.id %}'">
+                        <td>{{ appointment.patient.get_full_name }}</td>
+                        <td>{{ appointment.slot.date|date:"Y-m-d" }}</td>
+                        <td>{{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i" }}</td>
+                        <td>
+                            {% if appointment.status %}
+                                <span class="badge {{ appointment.status|lower }}">{{ appointment.status|capfirst }}</span>
+                            {% endif %}
+                        </td>
+                        <td onclick="event.stopPropagation()">
+                            {% if appointment.status == "REQUESTED" %}
+                                <form method="post" action="{% url 'confirm_appointment' appointment.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn confirm">Confirm</button>
+                                </form>
+                                <form method="post" action="{% url 'cancel_appointment' appointment.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn cancel">Cancel</button>
+                                </form>
+                            {% elif appointment.status == "CONFIRMED" %}
+                                <form method="post" action="{% url 'mark_as_no_show' appointment.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn noshow">No Show</button>
+                                </form>
+                            {% elif appointment.status == "CHECKED_IN" %}
+                                <form method="post" action="{% url 'mark_as_completed' appointment.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn confirm">Complete</button>
+                                </form>
+                            {% else %}
+                                <span class="badge {{ appointment.status|lower }}">{{ appointment.status|capfirst }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            {% if appointments.has_other_pages %}
+            <div class="pagination">
+                {% if appointments.has_previous %}
+                    <a href="?page={{ appointments.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a>
                 {% endif %}
-                {% else %}
-                <p>No appointments for this status.</p>
+                <span>Page {{ appointments.number }} of {{ appointments.paginator.num_pages }}</span>
+                {% if appointments.has_next %}
+                    <a href="?page={{ appointments.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a>
                 {% endif %}
             </div>
-        </main>
+            {% endif %}
 
-        <!-- ================= FOOTER ================= -->
-        <footer class="main-footer">
-            <p>© {% now "Y" %} MediFlow</p>
-            <p>Smart, Secure, Scalable Clinic Management.</p>
-        </footer>
+            {% else %}
+                <p>No appointments for this status.</p>
+            {% endif %}
 
-    </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>© {% now "Y" %} MediFlow</p>
+        <p>Smart, Secure, Scalable Clinic Management.</p>
+    </footer>
+
+</div>
 </body>
-
 </html>
