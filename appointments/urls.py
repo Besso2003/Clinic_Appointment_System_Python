@@ -9,12 +9,8 @@ urlpatterns = [
     path("<int:appointment_id>/cancel/", views.cancel_appointment, name="cancel_appointment"),
     path("<int:appointment_id>/checkin/", views.mark_as_checked_in, name="mark_as_checked_in"),
 
-
-
     # Form to show available slots and doctors
     path("create/", views.show_create_appointment_form, name="show_create_appointment_form"),
-
-    path('generate_slots/<int:schedule_id>/', views.generate_slots_view, name='generate_slots'),
 
     path('my-appointments/', views.list_patient_appointments, name='list_patient_appointments'),
 

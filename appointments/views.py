@@ -17,9 +17,6 @@ from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
 
 
-def is_admin(user):
-    return user.is_superuser
-
 def handle_errors(view_func):
     def wrapper(request, *args, **kwargs):
         try:
@@ -51,20 +48,6 @@ def get_home_url(request):
         elif request.user.role == "P":
             return "patient"
     return "login"
-
-@login_required
-# @user_passes_test(is_admin)
-@transaction.atomic
-def generate_slots_view(request, schedule_id):
-    """
-    Generate slots for a given DoctorSchedule for the next 14 days.
-    Only accessible to admin users.
-    """
-    schedule = get_object_or_404(DoctorSchedule, id=schedule_id)
-    
-    generate_slots_for_schedule(schedule)
-    
-    return HttpResponse(f"Slots generated successfully for schedule {schedule.id}.")
 
 ## need to test
 @login_required
@@ -208,13 +191,6 @@ def prevent_double_booking(slot):
     if Appointment.objects.filter(slot=slot, status__in=["REQUESTED", "CONFIRMED", "CHECKED_IN"]).exists():
         raise ValidationError("Slot already booked.")
 
-
-# def prevent_double_booking(slot):
-
-#         if Appointment.objects.filter(slot=slot).exclude(status="CANCELLED").exists():
-#          raise ValidationError("Slot already booked.")
-    # if not slot.is_available:
-    #     raise ValidationError("Slot already booked.")
     
 ## done
 @login_required
@@ -395,23 +371,6 @@ def mark_as_checked_in(request, appointment_id):
 
     return redirect("list_today_appointments")
 
-# @login_required
-# def doctor_queue(request):
-
-#     if request.user.role != "D":
-#         raise PermissionError("Only doctors allowed.")
-
-#     today = timezone.localdate()
-
-#     queue = Appointment.objects.filter(
-#         doctor=request.user,
-#         slot__date=today,
-#         status="CHECKED_IN"
-#     ).select_related("patient", "slot").order_by("check_in_time")
-
-#     return render(request, "appointments/doctor_queue.html", {
-#         "queue": queue
-#     })
 
 @login_required
 def doctor_queue(request):
@@ -443,26 +402,6 @@ def get_today_queue():
 
     return queue
 
-# @login_required
-# def receptionist_queue(request):
-
-#     if request.user.role != "R":
-#         raise PermissionError("Only receptionists allowed.")
-
-#     today = timezone.localdate()
-
-#     queue = Appointment.objects.filter(
-#         slot__date=today,
-#         status="CHECKED_IN"
-#     ).select_related(
-#         "patient",
-#         "doctor",
-#         "slot"
-#     ).order_by("doctor", "check_in_time")
-
-#     return render(request, "appointments/receptionist_queue.html", {
-#         "queue": queue
-#     })
 
 @login_required
 def receptionist_queue(request):
@@ -494,21 +433,7 @@ def call_next_patient(request):
     next_patient.save()
 
     return redirect("doctor_queue")
-# @login_required
-# @transaction.atomic
-# def call_next_patient(request):
 
-#     if request.user.role != "D":
-#         raise PermissionError("Only doctors allowed.")
-
-#     next_patient = get_today_queue().filter(
-#         doctor=request.user
-#     ).first()
-
-#     if not next_patient:
-#         raise ValidationError("No patients in queue.")
-
-#     return redirect("appointment_details", appointment_id=next_patient.id)
 
 ## done
 @login_required
@@ -539,8 +464,6 @@ def list_patient_appointments(request):
         "current_status": status_filter
     })
 
-## done
-from django.db.models import Q
 
 @login_required
 @handle_errors
