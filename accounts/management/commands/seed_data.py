@@ -1,10 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from accounts.forms import UserRegistrationForm
+from accounts.forms import StaffRegistrationForm, PatientRegistrationForm
 from django.contrib.auth.models import Group
 
 User = get_user_model()
-
 
 class Command(BaseCommand):
     help = "Seed database with initial users"
@@ -73,7 +72,6 @@ class Command(BaseCommand):
         ]
 
         for user_data in users:
-            # use the registration form so password handling and validation are centralized
             password = user_data.pop("password")
 
             if user_data.get("role") == "A":
@@ -103,12 +101,13 @@ class Command(BaseCommand):
                 'password2': password,
             }
 
-            form = UserRegistrationForm(form_data)
-            if form.is_valid():
-                # save user and let the form attach the proper group
-                user = form.save()
+            if user_data.get("role") == "P":
+                form = PatientRegistrationForm(form_data)
+            else:
+                form = StaffRegistrationForm(form_data)
 
-                # report created user and primary group (if any)
+            if form.is_valid():
+                user = form.save()
                 group_names = list(user.groups.values_list('name', flat=True))
                 primary_group = group_names[0] if group_names else None
                 self.stdout.write(self.style.SUCCESS(f"Created user: {user.username} (group: {primary_group})"))
