@@ -1,129 +1,147 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>MediFlow | Doctor Queue</title>
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-<link rel="stylesheet" href="{% static 'css/appointments.css' %}">
-<style>
-/* ================= TABLE ================= */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
+    <title>MediFlow | Doctor Queue</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
+    <style>
+        /* ================= TABLE ================= */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-.table th,
-.table td {
-    padding: 16px 20px; /* increased padding for better spacing */
-    text-align: left;
-    border-bottom: 1px solid #e5e7eb;
-}
+        .table th,
+        .table td {
+            padding: 12px 18px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
 
-.table th {
-    background: #f8fafc;
-    font-weight: 600;
-}
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+        }
 
-.table tr:hover {
-    background: #f9fafb;
-}
+        /* ================= CLICKABLE ROW ================= */
+        .clickable-row {
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
 
-/* Optional: make the "Waiting" column a bit narrower */
-.table td:nth-child(5) {
-    width: 120px;
-}
+        .clickable-row:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+            transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
 
-/* ================= BUTTONS ================= */
-.btn-med {
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-}
+        /* Optional: keep links/buttons inside rows clickable */
+        .clickable-row a,
+        .clickable-row button {
+            cursor: pointer;
+            pointer-events: auto;
+        }
 
-.btn-solid {
-    background-color: #2563eb;
-    color: #fff;
-}
+        /* ================= BUTTONS ================= */
+        .btn-med {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
 
-.btn-solid:hover {
-    background-color: #1d4ed8;
-}
-</style>
+        .btn-solid {
+            background-color: #2563eb;
+            color: #fff;
+        }
+
+        .btn-solid:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* ================= PAGINATION ================= */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .pagination span {
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
-<div class="page-wrapper">
+    <div class="page-wrapper">
 
-<header class="main-header">
-<div class="logo-text">✚ MediFlow</div>
-</header>
+        <header class="main-header">
+            <div class="logo-text">✚ MediFlow</div>
+        </header>
 
-<main class="content-section">
+        <main class="content-section">
 
-<div class="glass-card">
-<h2>Today's Queue</h2>
+            <div class="glass-card">
+                <h2>Today's Queue</h2>
 
-<form method="POST" action="{% url 'call_next_patient' %}">
-{% csrf_token %}
-<button class="btn-med btn-solid">Call Next Patient</button>
-</form>
+                <form method="POST" action="{% url 'call_next_patient' %}">
+                    {% csrf_token %}
+                    <button class="btn-med btn-solid">Call Next Patient</button>
+                </form>
 
-<br>
+                <br>
 
-{% if queue %}
+                {% if queue %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Patient</th>
+                            <th>Time</th>
+                            <th>Checked In</th>
+                            <th>Waiting</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in queue %}
+                        <tr class="clickable-row" onclick="window.location='{% url 'appointment_details' appt.id %}'">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ appt.patient.get_full_name }}</td>
+                            <td>{{ appt.slot.start_time|time:"H:i" }}</td>
+                            <td>{{ appt.check_in_time|time:"H:i" }}</td>
+                            <td>{{ appt.check_in_time|timesince }} ago</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="no-slots">No patients in queue.</p>
+                {% endif %}
 
-<table class="table">
-<thead>
-<tr>
-<th>#</th>
-<th>Patient</th>
-<th>Time</th>
-<th>Checked In</th>
-<th>Waiting</th>
-</tr>
-</thead>
+            </div>
 
-<tbody>
+        </main>
 
-{% for appt in queue %}
-
-<tr class="clickable-row">
-
-<td>{{ forloop.counter }}</td>
-
-<td>{{ appt.patient.get_full_name }}</td>
-
-<td>
-{{ appt.slot.start_time|time:"H:i" }}
-</td>
-
-<td>
-{{ appt.check_in_time|time:"H:i" }}
-</td>
-
-<td>
-{{ appt.check_in_time|timesince }} ago
-</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-</table>
-
-{% else %}
-
-<p class="no-slots">No patients in queue.</p>
-
-{% endif %}
-
-</div>
-</main>
-
-</div>
+    </div>
 </body>
 </html>

@@ -1,113 +1,174 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reception Dashboard | MediFlow</title>
-    <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}" />
-  </head>
-  <body>
-    <div class="container">
-      <aside class="sidebar">
-        <div class="logo">
-          <h2>Clinic System</h2>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reception Dashboard | MediFlow</title>
+  <link rel="stylesheet" href="{% static 'css/dashboards.style.css' %}" />
+  <style>
+    /* ================= TABLE ================= */
+    .appointments-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .appointments-table th,
+    .appointments-table td {
+      padding: 12px 18px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .appointments-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      border-bottom: 2px solid #eee;
+    }
+
+    /* ================= CLICKABLE ROW ================= */
+    .clickable-row {
+      transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+
+    .clickable-row:hover {
+      background-color: #f1f1f1;
+      cursor: pointer;
+      transform: scale(1.01);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Keep buttons inside rows clickable */
+    .clickable-row button {
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    /* ================= BUTTONS ================= */
+    .btn-med {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-solid {
+      background-color: #2563eb;
+      color: #fff;
+    }
+
+    .btn-solid:hover {
+      background-color: #1d4ed8;
+    }
+
+    .no-slots {
+      padding: 15px;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="logo">
+        <h2>Clinic System</h2>
+      </div>
+      <nav class="nav-menu">
+        <ul>
+          <li>
+            <a href="{% url 'receptionist' %}" class="active">Reception Home</a>
+          </li>
+          <li><a href="#">New Registration</a></li>
+          <li>
+            <a href="{% url 'list_today_appointments' %}">Daily Schedule</a>
+          </li>
+          <li><a href="{% url 'receptionist_queue' %}">Queue</a></li>
+          <li><a href="{% url 'profile' %}">Profile</a></li>
+          <li>
+            <form action="{% url 'logout' %}" method="post" style="display: inline">
+              {% csrf_token %}
+              <button type="submit" class="logout-btn-link">Logout</button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <header class="header">
+        <div class="header-content">
+          <h1>Reception Desk: {{ user.first_name }}</h1>
         </div>
-        <nav class="nav-menu">
-          <ul>
-            <li>
-              <a href="{% url 'receptionist' %}" class="active"
-                >Reception Home</a
-              >
-            </li>
-            <li><a href="#">New Registration</a></li>
-            <li>
-              <a href="{% url 'list_today_appointments' %}">Daily Schedule</a>
-            </li>
-            <li><a href="{% url 'receptionist_queue' %}">Queue</a></li>
-            <li><a href="{% url 'profile' %}">Profile</a></li>
-            <li>
-              <form
-                action="{% url 'logout' %}"
-                method="post"
-                style="display: inline"
-              >
-                {% csrf_token %}
-                <button type="submit" class="logout-btn-link">Logout</button>
-              </form>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      </header>
 
-      <main class="main-content">
-        <header class="header">
-          <div class="header-content">
-            <h1>Reception Desk: {{ user.first_name }}</h1>
-       
+      <section class="content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Checked In Today</h3>
+            <p class="stat-number">{{ checked_in_count }}</p>
           </div>
-        </header>
-
-        <section class="content">
-          <div class="stats-grid">
+          <a href="{% url 'list_today_appointments' %}?status=pending" style="text-decoration: none; color: inherit;">
             <div class="stat-card">
-              <h3>Checked In Today</h3>
-              <p class="stat-number">{{ checked_in_count }}</p>
+              <h3>Pending Appointments</h3>
+              <p class="stat-number">{{ pending_appointments }}</p>
             </div>
-           <a href="{% url 'list_today_appointments' %}?status=pending" style="text-decoration: none; color: inherit;">
-  <div class="stat-card">
-    <h3>Pending Appointments</h3>
-    <p class="stat-number">{{ pending_appointments }}</p>
-  </div>
-</a>
-            <div class="stat-card">
-              <h3>Available Doctors</h3>
-              <p class="stat-number">{{ active_doctors }}</p>
-            </div>
+          </a>
+          <div class="stat-card">
+            <h3>Available Doctors</h3>
+            <p class="stat-number">{{ active_doctors }}</p>
           </div>
+        </div>
 
-         <div class="card">
-  <h2>Patient Check-In Queue</h2>
-  <table class="appointments-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Patient</th>
-        <th>Assigned Doctor</th>
-        <th>Check-In Time</th>
-        <th>Waiting</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for appt in today_queue %}
-      <tr>
-        <td>{{ forloop.counter }}</td>
-        <td>{{ appt.patient.get_full_name }}</td>
-        <td>Dr. {{ appt.doctor.get_full_name }}</td>
-        <td>{{ appt.check_in_time|time:"H:i" }}</td>
-        <td>{{ appt.check_in_time|timesince }} ago</td>
-        <td>
-          {% if appt.status == "CONFIRMED" %}
-          <form method="post" action="{% url 'mark_as_checked_in' appt.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-small btn-solid">Check-In</button>
-          </form>
+        <div class="card">
+          <h2>Patient Check-In Queue</h2>
+
+          {% if today_queue %}
+          <table class="appointments-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Patient</th>
+                <th>Assigned Doctor</th>
+                <th>Check-In Time</th>
+                <th>Waiting</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for appt in today_queue %}
+              <tr class="clickable-row" onclick="window.location='{% url 'appointment_details' appt.id %}'">
+                <td>{{ forloop.counter }}</td>
+                <td>{{ appt.patient.get_full_name }}</td>
+                <td>Dr. {{ appt.doctor.get_full_name }}</td>
+                <td>{{ appt.check_in_time|time:"H:i" }}</td>
+                <td>{{ appt.check_in_time|timesince }} ago</td>
+                <td>
+                  {% if appt.status == "CONFIRMED" %}
+                  <form method="post" action="{% url 'mark_as_checked_in' appt.id %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-med btn-solid">Check-In</button>
+                  </form>
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
           {% else %}
-            -
+          <p class="no-slots">Queue is currently empty.</p>
           {% endif %}
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="6">Queue is currently empty.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-        </section>
-      </main>
-    </div>
-  </body>
+
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+
 </html>

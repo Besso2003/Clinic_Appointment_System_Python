@@ -34,82 +34,103 @@
         .pagination span {
             font-weight: 600;
         }
+
         .table {
-    width: 100%;
-    border-collapse: collapse;
-}
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-.table th,
-.table td {
-    padding: 12px 18px;
-    text-align: left;
-}
+        .table th,
+        .table td {
+            padding: 12px 18px;
+            text-align: left;
+        }
 
-.table th {
-    font-weight: 600;
-    border-bottom: 2px solid #eee;
-}
+        .table th {
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+        }
 
-.table td {
-    border-bottom: 1px solid #f0f0f0;
-}
-/* ===== SEARCH BAR ===== */
+        .table td {
+            border-bottom: 1px solid #f0f0f0;
+        }
 
-.search-bar{
-margin-bottom:25px;
-padding:15px;
-background:#f8fafc;
-border-radius:10px;
-border:1px solid #e5e7eb;
-}
+        /* ===== SEARCH BAR ===== */
 
-.search-form{
-display:flex;
-align-items:end;
-gap:15px;
-flex-wrap:wrap;
-}
+        .search-bar {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
 
-.search-group{
-display:flex;
-flex-direction:column;
-gap:5px;
-}
+        .search-form {
+            display: flex;
+            align-items: end;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
 
-.search-group label{
-font-size:12px;
-font-weight:600;
-color:#555;
-}
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
 
-.search-group input{
-padding:9px 12px;
-border-radius:6px;
-border:1px solid #ccc;
-font-family:'Sora',sans-serif;
-min-width:180px;
-}
+        .search-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+        }
 
-.search-group input:focus{
-outline:none;
-border-color:#2563eb;
-box-shadow:0 0 0 2px rgba(37,99,235,0.15);
-}
+        .search-group input {
+            padding: 9px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-family: 'Sora', sans-serif;
+            min-width: 180px;
+        }
 
-.search-btn{
-padding:9px 20px;
-border:none;
-background:#2563eb;
-color:white;
-border-radius:6px;
-font-weight:600;
-cursor:pointer;
-transition:.2s;
-}
+        .search-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
 
-.search-btn:hover{
-background:#1d4ed8;
-}
+        .search-btn {
+            padding: 9px 20px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .search-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* Clickable row effect */
+        .clickable-row {
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        .clickable-row:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+            transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Keep buttons/forms inside row clickable */
+        .clickable-row a,
+        .clickable-row button,
+        .clickable-row form {
+            pointer-events: auto;
+        }
     </style>
 </head>
 
@@ -145,39 +166,30 @@ background:#1d4ed8;
             <div class="glass-card">
                 <div class="search-bar">
 
-<form method="get" class="search-form">
+                    <form method="get" class="search-form">
 
-<div class="search-group">
-<input 
-type="text"
-name="search"
-placeholder="🔎 Patient name or appointment ID"
-value="{{ request.GET.search }}">
-</div>
+                        <div class="search-group">
+                            <input type="text" name="search" placeholder="🔎 Patient name or appointment ID"
+                                value="{{ request.GET.search }}">
+                        </div>
 
-<div class="search-group">
-<label>From</label>
-<input 
-type="date"
-name="start_date"
-value="{{ request.GET.start_date }}">
-</div>
+                        <div class="search-group">
+                            <label>From</label>
+                            <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+                        </div>
 
-<div class="search-group">
-<label>To</label>
-<input 
-type="date"
-name="end_date"
-value="{{ request.GET.end_date }}">
-</div>
+                        <div class="search-group">
+                            <label>To</label>
+                            <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+                        </div>
 
-<button type="submit" class="search-btn">
-Search
-</button>
+                        <button type="submit" class="search-btn">
+                            Search
+                        </button>
 
-</form>
+                    </form>
 
-</div>
+                </div>
                 <h2>Doctor Appointments</h2>
 
                 <!-- ================= STATUS TABS ================= -->
@@ -215,7 +227,8 @@ Search
                     </thead>
                     <tbody>
                         {% for appointment in appointments %}
-                        <tr>
+                        <tr class="clickable-row" onclick="window.location='{% url 'appointment_details' appointment.id %}'">
+                            
                             <td>{{ appointment.patient.get_full_name }}</td>
                             <td>{{ appointment.slot.date|date:"Y-m-d" }}</td>
                             <td>{{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i"}}
@@ -233,7 +246,7 @@ Search
                                     {% csrf_token %}
                                     <button type="submit" class="btn-med btn-outline cancel">Cancel</button>
                                 </form>
-                                 {% elif appointment.status == "CHECKED_IN" %}
+                                {% elif appointment.status == "CHECKED_IN" %}
                                 <!-- Complete button -->
                                 <form method="post" action="{% url 'mark_as_completed' appointment.id %}">
                                     {% csrf_token %}
