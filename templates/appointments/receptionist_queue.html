@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>MediFlow | Receptionist Queue</title>
@@ -72,16 +73,24 @@
             color: #fff;
         }
 
-        .badge-waiting { background-color: #f59e0b; }
-        .badge-checked-in { background-color: #10b981; }
-        .badge-no-show { background-color: #ef4444; }
+        .badge-waiting {
+            background-color: #f59e0b;
+        }
+
+        .badge-checked-in {
+            background-color: #10b981;
+        }
+
+        .badge-no-show {
+            background-color: #ef4444;
+        }
 
         /* ================= CARD ================= */
         .glass-card {
             padding: 25px;
             border-radius: 12px;
             background: #fff;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
 
         .clickable-row:hover {
@@ -94,87 +103,108 @@
             font-weight: 700;
             color: #111827;
         }
+
+        /* ================= CLICKABLE ROW ================= */
+        .clickable-row {
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        .clickable-row:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+            transform: scale(1.01);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Keep links/buttons/forms inside rows clickable */
+        .clickable-row a,
+        .clickable-row button,
+        .clickable-row form {
+            pointer-events: auto;
+        }
     </style>
 </head>
 
 <body>
-<div class="page-wrapper">
+    <div class="page-wrapper">
 
-<header class="main-header">
-    <div class="logo-text">✚ MediFlow</div>
-</header>
+        <header class="main-header">
+            <div class="logo-text">✚ MediFlow</div>
+        </header>
 
-<main class="content-section">
-    <div class="glass-card">
-        <h2>Receptionist Queue</h2>
+        <main class="content-section">
+            <div class="glass-card">
+                <h2>Receptionist Queue</h2>
 
-        <!-- <form method="POST" action="{% url 'call_next_patient' %}">
+                <!-- <form method="POST" action="{% url 'call_next_patient' %}">
             {% csrf_token %}
             <button class="btn-med btn-solid">Call Next Patient</button>
         </form> -->
 
-        <br>
+                <br>
 
-        {% if queue %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Appointment</th>
-                    <th>Status</th>
-                    <th>Waiting Time</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for appt in queue %}
-                <tr class="clickable-row">
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ appt.patient.get_full_name }}</td>
-                    <td>Dr. {{ appt.doctor.get_full_name }}</td>
-                    <td>{{ appt.slot.start_time|time:"H:i" }}</td>
-                    <td>
-                        {% if appt.status == "CONFIRMED" %}
-                            <span class="badge badge-waiting">Waiting</span>
-                        {% elif appt.status == "CHECKED_IN" %}
-                            <span class="badge badge-checked-in">Checked In</span>
-                        {% elif appt.status == "NO_SHOW" %}
-                            <span class="badge badge-no-show">No Show</span>
-                        {% endif %}
-                    </td>
-                    <td class="waiting-col">
-                        {% if appt.status == "CHECKED_IN" %}
-                            {{ appt.check_in_time|timesince }} ago
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if appt.status == "CONFIRMED" %}
-                        <form method="post" action="{% url 'mark_as_checked_in' appt.id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-med btn-solid btn-small">Check-In</button>
-                        </form>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7">Queue is currently empty.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="no-slots">No patients in queue.</p>
-        {% endif %}
+                {% if queue %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Appointment</th>
+                            <th>Status</th>
+                            <th>Waiting Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in queue %}
+                        <tr class="clickable-row" onclick="window.location='{% url 'appointment_details' appt.id %}'">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ appt.patient.get_full_name }}</td>
+                            <td>Dr. {{ appt.doctor.get_full_name }}</td>
+                            <td>{{ appt.slot.start_time|time:"H:i" }}</td>
+                            <td>
+                                {% if appt.status == "CONFIRMED" %}
+                                <span class="badge badge-waiting">Waiting</span>
+                                {% elif appt.status == "CHECKED_IN" %}
+                                <span class="badge badge-checked-in">Checked In</span>
+                                {% elif appt.status == "NO_SHOW" %}
+                                <span class="badge badge-no-show">No Show</span>
+                                {% endif %}
+                            </td>
+                            <td class="waiting-col">
+                                {% if appt.status == "CHECKED_IN" %}
+                                {{ appt.check_in_time|timesince }} ago
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if appt.status == "CONFIRMED" %}
+                                <form method="post" action="{% url 'mark_as_checked_in' appt.id %}"
+                                    style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-med btn-solid btn-small">Check-In</button>
+                                </form>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7">Queue is currently empty.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="no-slots">No patients in queue.</p>
+                {% endif %}
+            </div>
+        </main>
+
     </div>
-</main>
-
-</div>
 </body>
+
 </html>
