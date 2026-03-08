@@ -34,8 +34,11 @@
             <header class="header">
                 <div class="header-content">
                     <h1>Clinic Analytics Dashboard</h1>
-                    <div class="user-info">
-                        <span>{{ user.email }}</span>
+                    <div class="header-actions" style="display: flex; align-items: center; gap: 1rem;">
+                        <a href="{% url 'admin_analytics_export_csv' %}" class="btn btn-primary">Export to CSV</a>
+                        <div class="user-info">
+                            <span>{{ user.email }}</span>
+                        </div>
                     </div>
                 </div>
             </header>
