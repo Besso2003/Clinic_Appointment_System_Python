@@ -31,7 +31,7 @@ class RoleRedirectMixin:
         return redirect(redirects.get(role, "home"))
 
 
-class CreateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, RoleRedirectMixin, CreateView):
+class CreateConsultationRecord(LoginRequiredMixin, RoleRedirectMixin,PermissionRequiredMixin,  CreateView):
     model = ConsultationRecord
     form_class = ConsultationRecordForm
     template_name = 'medical_records/consultationrecord_form.html'
@@ -57,20 +57,6 @@ class CreateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, Role
             and appointment.slot.date == today
         )
 
-    def dispatch(self, request, *args, **kwargs):
-        appointment = self.get_appointment()
-
-        existing_record = ConsultationRecord.objects.filter(
-            appointment=appointment
-        ).first()
-
-        if existing_record:
-            return redirect("consultation-update", pk=existing_record.pk)
-
-        return super().dispatch(request, *args, **kwargs)
-
-
-
     def form_valid(self, form):
         appointment = self.get_appointment()
         form.instance.appointment = appointment
@@ -80,7 +66,7 @@ class CreateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, Role
         return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
 
-class UpdateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class UpdateConsultationRecord(LoginRequiredMixin, RoleRedirectMixin,PermissionRequiredMixin, UpdateView):
     model = ConsultationRecord
     form_class = ConsultationRecordForm
     template_name = 'medical_records/consultationrecord_form.html'
@@ -106,7 +92,7 @@ class UpdateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, Upda
     def get_success_url(self):
         return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
-class ViewConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+class ViewConsultationRecord(LoginRequiredMixin, RoleRedirectMixin,PermissionRequiredMixin, DetailView):
     model = ConsultationRecord
     template_name = 'medical_records/consultationrecord_detail.html'
     context_object_name = 'record'
@@ -127,7 +113,7 @@ class ViewConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, Detail
 
 
 
-class PatientMedicalHistory(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+class PatientMedicalHistory(LoginRequiredMixin, RoleRedirectMixin,PermissionRequiredMixin, ListView):
     model = ConsultationRecord
     template_name = 'medical_records/patient_medical_history.html'
     context_object_name = 'consultations'
