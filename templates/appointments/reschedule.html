@@ -45,7 +45,17 @@
         <header class="main-header">
             <div class="logo-text">✚ MediFlow</div>
             <nav>
-                <a href="{% url 'home' %}">Home</a>
+ <div style="margin-top:25px; text-align:center;">
+    {% for group in user.groups.all %}
+        {% if group.name == "Doctor" %}
+            <a href="{% url 'doctor' %}" class="btn-med btn-outline cancel">Cancel & Go Back</a>
+        {% elif group.name == "Receptionist" %}
+            <a href="{% url 'receptionist' %}" class="btn-med btn-outline cancel">Cancel & Go Back</a>
+        {% endif %}
+    {% empty %}
+        <a href="{% url 'patient' %}" class="btn-med btn-outline cancel">Cancel & Go Back</a>
+    {% endfor %}
+</div>
                 {% if user.is_authenticated %}
                 <div class="user-menu">
                     <a href="{% url 'profile' %}" class="user-info">
@@ -75,8 +85,7 @@
                     <h3>Current Appointment</h3>
                     <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
                     <p><strong>Date:</strong> {{ appointment.slot.date|date:"Y-m-d" }}</p>
-                    <p><strong>Time:</strong> {{ appointment.slot.start_time|time:"H:i" }} - {{
-                        appointment.slot.end_time|time:"H:i" }}</p>
+                    <p><strong>Time:</strong> {{ appointment.slot.start_time|time:"H:i" }} - {{appointment.slot.end_time|time:"H:i" }}</p>
                     <p><span class="badge">{{ appointment.get_status_display }}</span></p>
                 </div>
 

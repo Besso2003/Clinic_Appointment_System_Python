@@ -16,6 +16,7 @@ from scheduling.models import DoctorSchedule
 from scheduling.services import generate_slots_for_schedule
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
+from accounts.models import User
 
 
 def handle_errors(view_func):
@@ -273,8 +274,8 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
     if not (is_patient or is_doctor or is_receptionist):
         raise PermissionDenied("You are not allowed to reschedule this appointment.")
 
-    if appointment.status not in ["REQUESTED", "CONFIRMED"]:
-        raise ValidationError("Status must be REQUESTED or CONFIRMED only.")
+    if appointment.status != "REQUESTED":
+        raise ValidationError("Status must be REQUESTED only.")
 
     new_slot = get_object_or_404(
         Slot.objects.select_for_update(),
@@ -447,23 +448,36 @@ def get_today_queue():
 
     return queue
 
+
 ## done groups and permissions
 @login_required
+@handle_errors
 def receptionist_queue(request):
-
     user = request.user
 
     if not user.groups.filter(name="Receptionist").exists():
         raise PermissionDenied("Only receptionists are allowed to view the queue.")
 
+    doctors = User.objects.filter(role='D').order_by('first_name', 'last_name')
+
+    selected_doctor = request.GET.get('doctor', None)
+
     queue = get_today_queue()
 
-    return render(request, "appointments/receptionist_queue.html", {
-        "queue": queue
-    })
+    if selected_doctor:
+        queue = queue.filter(doctor__id=selected_doctor)
+
+    context = {
+        'queue': queue,
+        'doctors': doctors,
+        'selected_doctor': selected_doctor,
+    }
+
+    return render(request, "appointments/receptionist_queue.html", context)
 
 ## done groups and permissions
 @login_required
+@handle_errors
 @transaction.atomic
 def call_next_patient(request):
 
@@ -557,24 +571,33 @@ def list_doctor_appointments(request):
         "current_status": status
     })
 
-## done groups and permissions
+
+
 @login_required
 @handle_errors
 def list_today_appointments(request):
-
     user = request.user
 
     if not user.groups.filter(name="Receptionist").exists():
-        raise PermissionDenied("Only Receptionists are allowed to view today's appointments.")
-
+       raise PermissionDenied("Only Receptionists are allowed to view today's appointments.")
+    
     today = timezone.localdate()
+    
     weekday_number = today.weekday()
+
 
     appointments = Appointment.objects.filter(
         slot__doctor_schedule__day_of_week=weekday_number
     ).select_related(
         "patient", "doctor", "slot"
     )
+
+
+    # appointments = Appointment.objects.filter(
+    #     slot__date__gte=today
+    # ).select_related(
+    #     "patient", "doctor", "slot"
+    # )
 
     status = request.GET.get("status")
     doctor = request.GET.get("doctor")
@@ -602,13 +625,74 @@ def list_today_appointments(request):
 
     appointments = appointments.order_by("slot__date", "slot__start_time")
 
+    doctors = User.objects.filter(role='D').order_by('first_name', 'last_name')
+
     paginator = Paginator(appointments, 7)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "appointments/receptionist_list_appointments.html", {
-        "appointments": page_obj
-    })
+    context = {
+        "appointments": page_obj,
+        "doctors": doctors,
+        "selected_doctor": doctor,  # to maintain selection in dropdown
+    }
+
+    return render(request, "appointments/receptionist_list_appointments.html", context)
+
+## done groups and permissions
+# @login_required
+# @handle_errors
+# def list_today_appointments(request):
+
+#     user = request.user
+
+#     if not user.groups.filter(name="Receptionist").exists():
+#         raise PermissionDenied("Only Receptionists are allowed to view today's appointments.")
+    
+
+#     today = timezone.localdate()
+#     weekday_number = today.weekday()
+
+#     appointments = Appointment.objects.filter(
+#         slot__doctor_schedule__day_of_week=weekday_number
+#     ).select_related(
+#         "patient", "doctor", "slot"
+#     )
+
+
+#     status = request.GET.get("status")
+#     doctor = request.GET.get("doctor")
+#     patient = request.GET.get("patient")
+#     start_date = request.GET.get("start_date")
+#     end_date = request.GET.get("end_date")
+#     search = request.GET.get("search")
+
+#     if status:
+#         appointments = appointments.filter(status=status)
+#     if doctor:
+#         appointments = appointments.filter(doctor_id=doctor)
+#     if patient:
+#         appointments = appointments.filter(patient_id=patient)
+#     if start_date:
+#         appointments = appointments.filter(slot__date__gte=start_date)
+#     if end_date:
+#         appointments = appointments.filter(slot__date__lte=end_date)
+#     if search:
+#         appointments = appointments.filter(
+#             Q(id__icontains=search) |
+#             Q(patient__first_name__icontains=search) |
+#             Q(patient__last_name__icontains=search)
+#         )
+
+#     appointments = appointments.order_by("slot__date", "slot__start_time")
+
+#     paginator = Paginator(appointments, 7)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+
+#     return render(request, "appointments/receptionist_list_appointments.html", {
+#         "appointments": page_obj
+#     })
 
 ## done groups and permissions
 @login_required
@@ -626,8 +710,8 @@ def show_reschedule_form(request, appointment_id):
     if not (is_patient or is_doctor or is_receptionist):
         raise PermissionDenied("You are not allowed to reschedule this appointment.")
 
-    if appointment.status not in ["REQUESTED", "CONFIRMED"]:
-        raise ValidationError("Only REQUESTED or CONFIRMED appointments can be rescheduled.")
+    if appointment.status != "REQUESTED":
+        raise ValidationError("Only REQUESTED appointments can be rescheduled.")
 
     today = timezone.localdate()
     now_time = timezone.localtime().time()
