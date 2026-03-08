@@ -49,101 +49,114 @@ def get_home_url(request):
             return "patient"
     return "login"
 
-## need to test
+## done groups and permissions
 @login_required
+@permission_required("appointments.change_appointment", raise_exception=True)
 @transaction.atomic
 @handle_errors
 def mark_as_no_show(request, appointment_id):
-
-    # Only Doctor or Receptionist allowed
-    if request.user.role not in ["D", "R"]:
-        raise PermissionError("Only doctor or receptionist allowed.")
-
     appointment = get_object_or_404(
         Appointment.objects.select_for_update(),
         id=appointment_id
     )
 
-    # If doctor, ensure it is their appointment
-    if request.user.role == "D" and appointment.doctor != request.user:
-        raise PermissionError("You are not allowed.")
+    now = timezone.now()
+    appointment_datetime = datetime.datetime.combine(
+        appointment.slot.date,
+        appointment.slot.start_time
+    )
+    appointment_datetime = timezone.make_aware(appointment_datetime)
+
+    allowed_late_period = appointment_datetime + datetime.timedelta(minutes=15)
+    if now < allowed_late_period:
+        raise ValidationError("Cannot mark as NO_SHOW before patient is 15 minutes late.")
+
+    if request.user.groups.filter(name="Doctor").exists() and appointment.doctor != request.user:
+        raise PermissionError("You are not allowed to mark this appointment.")
 
     if appointment.status != "CONFIRMED":
-        raise ValidationError("Appointment must be confirmed first.")
+        raise ValidationError("Only confirmed appointments can be marked as NO_SHOW.")
 
     appointment.status = "NO_SHOW"
-    appointment.updated_at = timezone.now()
+    appointment.updated_at = now
     appointment.save()
 
-    # Free the slot again
+    # Free the slot
     appointment.slot.is_available = True
     appointment.slot.save()
 
-    next_url = request.META.get('HTTP_REFERER', reverse('list_today_appointments'))
+    next_url = request.META.get("HTTP_REFERER", reverse("list_today_appointments"))
     return redirect(next_url)
 
-## done
+## done groups and permissions
 @login_required
 @transaction.atomic
 @handle_errors
 def mark_as_completed(request, appointment_id):
 
-    if request.user.role != "D":
-        raise PermissionError("Only doctor allowed.")
-    
+    user = request.user
+
+    if not user.groups.filter(name="Doctor").exists():
+        raise PermissionDenied("Only doctors are allowed to mark appointments as completed.")
+
+    # Lock the appointment to prevent race conditions
     appointment = get_object_or_404(
         Appointment.objects.select_for_update(),
         id=appointment_id
     )
 
-    if appointment.doctor != request.user:
-        raise PermissionError("You are not allowed")
+    if appointment.doctor != user:
+        raise PermissionDenied("You are not allowed to complete this appointment.")
 
     if appointment.status != "CHECKED_IN":
         raise ValidationError("Appointment must be checked in first.")
-    
+
     appointment.status = "COMPLETED"
     appointment.updated_at = timezone.now()
     appointment.save()
 
+    # Redirect to the previous page, or default to doctor appointments list
     next_url = request.META.get('HTTP_REFERER', reverse('list_doctor_appointments'))
     return redirect(next_url)
 
-## done
+
+## done groups and permissions
 @login_required
+@permission_required("appointments.add_appointment", raise_exception=True)
 @handle_errors
 def show_create_appointment_form(request):
+    """
+    Display the appointment creation form for patients.
+    Only users with permission to add appointments can access.
+    """
 
-    if request.user.role != "P":
-        raise PermissionError("Only Patients Are Allowed")
+    # Ensure the user is a Patient
+    if not request.user.groups.filter(name="Patient").exists():
+        raise PermissionError("Only Patients are allowed to create appointments.")
 
     doctor_id = request.GET.get("doctor_id")
-    page_number = request.GET.get("page", 1)  # Get current page number
+    page_number = request.GET.get("page", 1)
 
     today = timezone.localdate()
     now_time = timezone.localtime().time()
 
     # Filter available slots
-    slots = Slot.objects.filter(
-        is_available=True
-    ).filter(
+    slots = Slot.objects.filter(is_available=True).filter(
         Q(date__gt=today) | Q(date=today, start_time__gt=now_time)
-    ).select_related(
-        "doctor_schedule__doctor"
-    )
+    ).select_related("doctor_schedule__doctor")
 
     if doctor_id:
         slots = slots.filter(doctor_schedule__doctor_id=doctor_id)
 
     slots = slots.order_by("date", "start_time")
 
+    # Pagination: 10 slots per page
     paginator = Paginator(slots, 10)
     page_obj = paginator.get_page(page_number)
 
-    # Get doctors list
-    from django.contrib.auth import get_user_model
+    # Get list of doctors
     User = get_user_model()
-    doctors = User.objects.filter(role="D")
+    doctors = User.objects.filter(groups__name="Doctor")
 
     context = {
         "slots": page_obj,
@@ -155,25 +168,33 @@ def show_create_appointment_form(request):
 
     return render(request, "appointments/create_appointment.html", context)
 
-## done
+## done groups and permissions
 @login_required
 @transaction.atomic
+@permission_required("appointments.add_appointment", raise_exception=True)
 @handle_errors
 def create_appointment(request, slot_id):
+    """
+    Creates a new appointment for the logged-in patient.
+    Permission-driven: only users with add_appointment permission (Patients) can create.
+    """
 
-    if request.user.role != "P":
-        raise PermissionError("Only Patients Are Allowed")
+    # Ensure the user is in the Patient group
+    if not request.user.groups.filter(name="Patient").exists():
+        raise PermissionDenied("Only Patients are allowed to create appointments.")
 
-
+    # Lock the slot to prevent race conditions
     slot = get_object_or_404(
         Slot.objects.select_for_update(),
         id=slot_id
     )
 
+    # Prevent double booking
     prevent_double_booking(slot)
 
     doctor = slot.doctor_schedule.doctor
 
+    # Create the appointment
     appointment = Appointment.objects.create(
         patient=request.user,
         doctor=doctor,
@@ -181,20 +202,21 @@ def create_appointment(request, slot_id):
         status="REQUESTED"
     )
 
+    # Mark slot as unavailable
     slot.is_available = False
     slot.save()
 
-
-    return redirect('list_patient_appointments')
+    return redirect("list_patient_appointments")
 
 def prevent_double_booking(slot):
     if Appointment.objects.filter(slot=slot, status__in=["REQUESTED", "CONFIRMED", "CHECKED_IN"]).exists():
         raise ValidationError("Slot already booked.")
 
     
-## done
+## done groups and permissions
 @login_required
 @transaction.atomic
+@permission_required("appointments.change_appointment", raise_exception=True)
 @handle_errors
 def cancel_appointment(request, appointment_id):
 
@@ -203,34 +225,37 @@ def cancel_appointment(request, appointment_id):
         id=appointment_id
     )
 
-    if request.user.role == "P" and appointment.patient != request.user:
-        raise PermissionError("You are not allowed")
+    user = request.user
+    is_patient = user.groups.filter(name="Patient").exists() and appointment.patient == user
+    is_doctor = user.groups.filter(name="Doctor").exists() and appointment.doctor == user
+    is_receptionist = user.groups.filter(name="Receptionist").exists()
 
-    elif request.user.role not in ["P", "R", "D"]:
-        raise PermissionError("You are not allowed")
+    if not (is_patient or is_doctor or is_receptionist):
+        raise PermissionDenied("You are not allowed to cancel this appointment.")
 
     if appointment.status not in ["REQUESTED", "CONFIRMED"]:
-        raise ValidationError("Status should be requested or confirmed only.")
+        raise ValidationError("Appointment status must be REQUESTED or CONFIRMED to cancel.")
 
+    # Update appointment
     appointment.status = "CANCELLED"
     appointment.updated_at = timezone.now()
     appointment.save()
 
+    # Free the slot
     appointment.slot.is_available = True
     appointment.slot.save()
 
-    # appointment.delete()
+    if is_patient:
+        return redirect("list_patient_appointments")
+    elif is_doctor:
+        return redirect("list_doctor_appointments")
+    else:
+        return redirect("list_today_appointments")
 
-    if request.user.role == "P":
-        return redirect('patient')
-    elif request.user.role == "R":
-        return redirect('list_today_appointments')
-    elif request.user.role == "D":
-        return redirect('doctor')
-
-## done
+## done groups and permissions
 @login_required
 @transaction.atomic
+@permission_required("appointments.change_appointment", raise_exception=True)
 @handle_errors
 def reschedule_appointment(request, appointment_id, new_slot_id):
 
@@ -238,11 +263,10 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
         Appointment.objects.select_for_update(),
         id=appointment_id
     )
-
     user = request.user
 
-    is_patient = appointment.patient == user
-    is_doctor = appointment.doctor == user
+    is_patient = appointment.patient == user and user.groups.filter(name="Patient").exists()
+    is_doctor = appointment.doctor == user and user.groups.filter(name="Doctor").exists()
     is_receptionist = user.groups.filter(name="Receptionist").exists()
 
     if not (is_patient or is_doctor or is_receptionist):
@@ -258,6 +282,7 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
 
     prevent_double_booking(new_slot)
 
+    # Ensure new slot belongs to the same doctor
     if new_slot.doctor_schedule.doctor != appointment.doctor:
         raise ValidationError("Invalid slot selection for this doctor.")
 
@@ -275,7 +300,6 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
     new_slot.is_available = False
     new_slot.save()
 
-    # Create history
     AppointmentRescheduleHistory.objects.create(
         appointment=appointment,
         old_slot=old_slot,
@@ -284,21 +308,30 @@ def reschedule_appointment(request, appointment_id, new_slot_id):
         reason=request.POST.get("reason", "")
     )
 
-    # Redirect by role
     if is_patient:
-        return redirect('patient')
+        return redirect('list_patient_appointments')
     elif is_doctor:
-        return redirect('doctor')
+        return redirect('list_doctor_appointments')
     else:
         return redirect('list_today_appointments')
 
-
+## done groups and permissions
 @login_required
+@handle_errors
 def appointment_details(request, appointment_id):
+
     appointment = get_object_or_404(
         Appointment.objects.select_related("doctor", "patient", "slot"),
         id=appointment_id
     )
+
+    user = request.user
+    is_patient = user.groups.filter(name="Patient").exists() and appointment.patient == user
+    is_doctor = user.groups.filter(name="Doctor").exists() and appointment.doctor == user
+    is_receptionist = user.groups.filter(name="Receptionist").exists()
+
+    if not (is_patient or is_doctor or is_receptionist):
+        raise PermissionDenied("You are not allowed to view this appointment.")
 
     history = AppointmentRescheduleHistory.objects.filter(
         appointment=appointment
@@ -309,40 +342,42 @@ def appointment_details(request, appointment_id):
         "history": history
     })
 
-## done
+## done groups and permissions
 @login_required
 @handle_errors
 def confirm_appointment(request, appointment_id):
 
-    if request.user.role not in ["R", "D"]:
-        raise PermissionError("You are not allowed")
+    user = request.user
 
+    if not (user.groups.filter(name="Receptionist").exists() or
+            user.groups.filter(name="Doctor").exists()):
+        raise PermissionDenied("You are not allowed to confirm appointments.")
 
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
     if appointment.status != "REQUESTED":
         raise ValidationError("Only requested appointments can be confirmed.")
 
-
     appointment.status = "CONFIRMED"
     appointment.save()
 
-    # if request.user.role == "P":
-    #     return redirect('patient')
-    if request.user.role == "R":
+    if user.groups.filter(name="Receptionist").exists():
         return redirect('list_today_appointments')
-    elif request.user.role == "D":
+    else:
         return redirect('list_doctor_appointments')
 
-## NOT YET
+## done groups and permissions
 @login_required
 @handle_errors
 @transaction.atomic
 def mark_as_checked_in(request, appointment_id):
 
-    if request.user.role != "R":
-        raise PermissionError("Only Receptionists Are Allowed.")
+    user = request.user
 
+    if not user.groups.filter(name="Receptionist").exists():
+        raise PermissionDenied("Only Receptionists are allowed to check in appointments.")
+
+    # Lock the appointment to avoid race conditions
     appointment = get_object_or_404(
         Appointment.objects.select_for_update(),
         id=appointment_id
@@ -351,11 +386,11 @@ def mark_as_checked_in(request, appointment_id):
     if appointment.status != "CONFIRMED":
         raise ValidationError("Only CONFIRMED appointments can be checked in.")
 
+    # Compute appointment datetime
     appointment_datetime = datetime.datetime.combine(
         appointment.slot.date,
         appointment.slot.start_time
     )
-
     appointment_datetime = timezone.make_aware(appointment_datetime)
 
     allowed_period = appointment_datetime + datetime.timedelta(minutes=15)
@@ -363,7 +398,7 @@ def mark_as_checked_in(request, appointment_id):
     if timezone.now() > allowed_period:
         appointment.status = "NO_SHOW"
         appointment.save()
-        return ValidationError("Patient exceeded 15 minutes. Marked as NO_SHOW.")
+        raise ValidationError("Patient exceeded 15 minutes. Marked as NO_SHOW.")
 
     appointment.status = "CHECKED_IN"
     appointment.check_in_time = timezone.now()
@@ -371,20 +406,23 @@ def mark_as_checked_in(request, appointment_id):
 
     return redirect("list_today_appointments")
 
-
+## done groups and permissions
 @login_required
 def doctor_queue(request):
 
-    if request.user.role != "D":
-        raise PermissionError("Only doctors allowed.")
+    user = request.user
 
-    queue = get_today_queue().filter(doctor=request.user)
+    if not user.groups.filter(name="Doctor").exists():
+        raise PermissionDenied("Only doctors are allowed to view the queue.")
+
+    # Filter today's queue for this doctor only
+    queue = get_today_queue().filter(doctor=user)
 
     return render(request, "appointments/doctor_queue.html", {
         "queue": queue
     })
 
-
+## done groups and permissions
 def get_today_queue():
     today = timezone.localdate()
 
@@ -402,12 +440,14 @@ def get_today_queue():
 
     return queue
 
-
+## done groups and permissions
 @login_required
 def receptionist_queue(request):
 
-    if request.user.role != "R":
-        raise PermissionError("Only receptionists allowed.")
+    user = request.user
+
+    if not user.groups.filter(name="Receptionist").exists():
+        raise PermissionDenied("Only receptionists are allowed to view the queue.")
 
     queue = get_today_queue()
 
@@ -415,66 +455,72 @@ def receptionist_queue(request):
         "queue": queue
     })
 
+## done groups and permissions
 @login_required
 @transaction.atomic
 def call_next_patient(request):
 
-    if request.user.role != "D":
-        raise PermissionError("Only doctors allowed.")
+    user = request.user
 
-    next_patient = get_today_queue().filter(
-        doctor=request.user
-    ).first()
+    if not user.groups.filter(name="Doctor").exists():
+        raise PermissionDenied("Only doctors are allowed to call patients.")
+
+    next_patient = get_today_queue().filter(doctor=user).first()
 
     if not next_patient:
         raise ValidationError("No patients in queue.")
 
-    next_patient.status = "COMPLETED" 
+    next_patient.status = "COMPLETED"
     next_patient.save()
 
     return redirect("doctor_queue")
 
 
-## done
+## done groups and permissions
 @login_required
+@permission_required("appointments.view_appointment", raise_exception=True)
 @handle_errors
 def list_patient_appointments(request):
-    if request.user.role != "P":
-        raise PermissionError("Only Patients Are Allowed")
 
-    status_filter = request.GET.get("status")
+    if not request.user.groups.filter(name="Patient").exists():
+        raise PermissionError("Only Patients are allowed to view their appointments.")
 
+    # Filter appointments for this patient
     appointments = Appointment.objects.filter(
         patient=request.user
     ).select_related("doctor", "slot").order_by(
         "slot__date", "slot__start_time"
     )
 
-    # Apply filter if status is provided
-    if status_filter in ["REQUESTED", "CONFIRMED", "CANCELLED"]:
+    status_filter = request.GET.get("status")
+    if status_filter in ["REQUESTED", "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"]:
         appointments = appointments.filter(status=status_filter)
 
-    # --- Pagination ---
-    paginator = Paginator(appointments, 7)  # 7 appointments per page
-    page_number = request.GET.get('page')  # Get ?page= parameter
-    page_obj = paginator.get_page(page_number)  # Safe: handles invalid pages
+    paginator = Paginator(appointments, 7)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     return render(request, "appointments/patient_list.html", {
-        "appointments": page_obj,  # Use page_obj instead of appointments
+        "appointments": page_obj,
         "current_status": status_filter
     })
 
-
+## done groups and permissions
 @login_required
 @handle_errors
 def list_doctor_appointments(request):
-    if request.user.role != "D":
-        raise PermissionError("Only Doctors Are Allowed")
 
+    user = request.user
+
+    if not user.groups.filter(name="Doctor").exists():
+        raise PermissionDenied("Only Doctors are allowed to view this page.")
+
+    # Base queryset: appointments for this doctor
     appointments = Appointment.objects.filter(
-        doctor=request.user
+        doctor=user
     ).select_related("patient", "slot")
 
+    # Filters
     status = request.GET.get("status")
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
@@ -493,10 +539,8 @@ def list_doctor_appointments(request):
             Q(patient__last_name__icontains=search)
         )
 
-    # Sort appointments
     appointments = appointments.order_by("slot__date", "slot__start_time")
 
-    # --- Pagination ---
     paginator = Paginator(appointments, 7)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -506,14 +550,17 @@ def list_doctor_appointments(request):
         "current_status": status
     })
 
-## done
+## done groups and permissions
 @login_required
 @handle_errors
 def list_today_appointments(request):
-    if request.user.role != "R":
-        raise PermissionError("Only Receptionists Are Allowed")
 
-    today = timezone.now().date()
+    user = request.user
+
+    if not user.groups.filter(name="Receptionist").exists():
+        raise PermissionDenied("Only Receptionists are allowed to view today's appointments.")
+
+    today = timezone.localdate()
     weekday_number = today.weekday()
 
     appointments = Appointment.objects.filter(
@@ -522,7 +569,6 @@ def list_today_appointments(request):
         "patient", "doctor", "slot"
     )
 
-    # GET parameters
     status = request.GET.get("status")
     doctor = request.GET.get("doctor")
     patient = request.GET.get("patient")
@@ -530,7 +576,6 @@ def list_today_appointments(request):
     end_date = request.GET.get("end_date")
     search = request.GET.get("search")
 
-    # Filters
     if status:
         appointments = appointments.filter(status=status)
     if doctor:
@@ -550,8 +595,7 @@ def list_today_appointments(request):
 
     appointments = appointments.order_by("slot__date", "slot__start_time")
 
-    # --- Pagination ---
-    paginator = Paginator(appointments, 7)  # 7 appointments per page
+    paginator = Paginator(appointments, 7)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -559,15 +603,17 @@ def list_today_appointments(request):
         "appointments": page_obj
     })
 
-## done
+## done groups and permissions
 @login_required
+@permission_required("appointments.change_appointment", raise_exception=True)
 @handle_errors
 def show_reschedule_form(request, appointment_id):
+
     appointment = get_object_or_404(Appointment, id=appointment_id)
     user = request.user
 
-    is_patient = appointment.patient == user
-    is_doctor = appointment.doctor == user
+    is_patient = appointment.patient == user and user.groups.filter(name="Patient").exists()
+    is_doctor = appointment.doctor == user and user.groups.filter(name="Doctor").exists()
     is_receptionist = user.groups.filter(name="Receptionist").exists()
 
     if not (is_patient or is_doctor or is_receptionist):
@@ -579,6 +625,7 @@ def show_reschedule_form(request, appointment_id):
     today = timezone.localdate()
     now_time = timezone.localtime().time()
 
+    # Fetch available slots for the same doctor, excluding current slot
     available_slots = Slot.objects.filter(
         is_available=True,
         doctor_schedule__doctor=appointment.doctor
@@ -586,11 +633,8 @@ def show_reschedule_form(request, appointment_id):
         Q(date__gt=today) | Q(date=today, start_time__gt=now_time)
     ).exclude(
         id=appointment.slot.id
-    ).select_related(
-        "doctor_schedule"
-    ).order_by("date", "start_time")
+    ).select_related("doctor_schedule").order_by("date", "start_time")
 
-    # PAGINATION: 10 slots per page
     paginator = Paginator(available_slots, 10)
     page_number = request.GET.get("page")
     paginated_slots = paginator.get_page(page_number)

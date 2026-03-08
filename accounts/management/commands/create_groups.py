@@ -7,29 +7,29 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         groups_data = {
             'Patient': [
-                'view_appointment', 
-                'add_appointment',
-                'change_appointment',
-                'delete_appointment',
-                'view_patientrecord',
-            ],
-            'Doctor': [
-                'view_appointment', 
-                'change_appointment', 
-                'delete_appointment',
-                'view_patientrecord', 
-                'add_patientrecord',
-            ],
-            'Receptionist': [
-                'add_user', 
-                'view_user', 
-                'add_appointment', 
-                'change_appointment', 
-                'view_appointment',
-                'delete_appointment',
-            ],
-            'Admin': [],
-        }
+             'view_appointment', 
+        'add_appointment',
+        'change_appointment',
+        'delete_appointment',
+        'view_consultationrecord',
+    ],
+    'Doctor': [
+        'view_appointment', 
+        'change_appointment', 
+        'delete_appointment',
+        'view_consultationrecord', 
+        'add_consultationrecord',
+    ],
+    'Receptionist': [
+        'add_user', 
+        'view_user', 
+        'add_appointment', 
+        'change_appointment', 
+        'view_appointment',
+        'delete_appointment',
+    ],
+    'Admin': [],
+}
 
         for group_name, permissions in groups_data.items():
             group, created = Group.objects.get_or_create(name=group_name)
