@@ -178,6 +178,100 @@
         .pagination span {
             font-weight: 600;
         }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            margin-right: 5px;
+            transition: all 0.2s ease-in-out; /* smooth hover transition */
+        }
+        
+        .action-btn.confirm {
+            background:#22c55e; 
+            color:white; 
+        }
+
+        .action-btn.confirm:hover {
+            background:#16a34a; /* darker green */
+            transform: translateY(-2px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+        
+        .action-btn.cancel {
+            border:1px solid #ef4444; 
+            color:#ef4444; 
+            background:white;
+        }
+        
+        .action-btn.cancel:hover {
+            background:#ef4444; 
+            color:white; 
+            transform: translateY(-2px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+/* Check-in Button */
+.action-btn.checkin {
+    background:#2563eb; 
+    color:white;
+}
+.action-btn.checkin:hover {
+    background:#1e40af; /* darker blue */
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* No-show Button */
+.action-btn.noshow {
+    border:1px solid #6b7280; 
+    color:#6b7280; 
+    background:white;
+}
+.action-btn.noshow:hover {
+    background:#6b7280; 
+    color:white; 
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* ------------------- */
+/* CLICKABLE ROWS       */
+/* ------------------- */
+.clickable-row {
+    transition: background-color .2s, transform .1s, box-shadow .2s;
+}
+.clickable-row:hover {
+    background-color: #f1f5f9; /* subtle highlight */
+    cursor: pointer;
+    transform: scale(1.01);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Make sure buttons inside clickable rows are clickable */
+.clickable-row a,
+.clickable-row button,
+.clickable-row form {
+    pointer-events: auto;
+}
+
+/* ------------------- */
+/* TABLE COLUMN SPACING */
+/* ------------------- */
+.table th,
+.table td {
+    padding: 14px 20px; /* increased spacing for readability */
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Optional: add hover effect on table cells */
+.table td:hover {
+    background-color: #f9fafb;
+    transition: background-color 0.2s;
+}
     </style>
 </head>
 
