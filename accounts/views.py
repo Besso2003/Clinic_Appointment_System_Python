@@ -1,21 +1,24 @@
 from django.shortcuts import get_object_or_404, render, redirect
-from .forms import StaffRegistrationForm, PatientRegistrationForm, User
+from .forms import StaffRegistrationForm, PatientRegistrationForm, User, ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
+from .decorators import admin_required
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.contrib.auth import update_session_auth_hash
 # Create your views here.
 
 def home_view(request):
     return render(request, 'accounts/home.html')
 
 
+# LoginView handles:authentication, password validation, session creation
 class login_view(LoginView):
     template_name = 'accounts/login.html'
     
     def get_success_url(self):
         user = self.request.user
-
+    # reverse_lazy delays the URL resolution until runtime, when the view is actually called
         if user.role == 'A':
             return reverse_lazy('admin')
         elif user.role == 'D':  
@@ -27,7 +30,7 @@ class login_view(LoginView):
         else:
             return reverse_lazy('home')
 
-
+@admin_required
 def staff_register_view(request):
     if request.method == 'POST':
         form = StaffRegistrationForm(request.POST, request.FILES)
@@ -39,7 +42,6 @@ def staff_register_view(request):
     
     return render(request, 'accounts/register.html', {'form': form})
 
-# @login_required
 def patient_register_view(request):
     if request.method == 'POST':
         form = PatientRegistrationForm(request.POST, request.FILES)
@@ -53,38 +55,46 @@ def patient_register_view(request):
 
 @login_required
 def view_profile(request):
-    user = request.user 
+    user = request.user
+
     if request.method == "POST":
-        first_name = request.POST.get("first_name", "").strip()
-        last_name = request.POST.get("last_name", "").strip()
-        email = request.POST.get("email", "").strip()
-        profile_picture = request.FILES.get("profile_picture")
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            # Keep the user logged in after password change
+            password = form.cleaned_data.get("password1")
+            if password:
+                update_session_auth_hash(request, user)
+            messages.success(request, "Profile updated successfully!")
+            return redirect("profile")
+    else:
+        form = ProfileUpdateForm(instance=user)
 
-        # Update fields
-        user.first_name = first_name
-        user.last_name = last_name
-        user.email = email
-        if profile_picture:
-            user.profile_picture = profile_picture
+    # Compute dashboard URL for Home button
+    if user.role == 'A':
+        dashboard_url = reverse('admin')
+    elif user.role == 'D':
+        dashboard_url = reverse('doctor')
+    elif user.role == 'R':
+        dashboard_url = reverse('receptionist')
+    else:
+        dashboard_url = reverse('patient')
 
-        user.save()
-        messages.success(request, "Profile updated successfully!")
-        return redirect("profile") 
-
-    return render(request, "accounts/profile.html", {"user": user})
-
-@login_required
-def manage_staff_view(request):
-    if request.user.role != 'A':
-        return redirect('home')
+    return render(request, "accounts/profile.html", {
+        "form": form,
+        "dashboard_url": dashboard_url
+    })
     
+    
+@admin_required
+def manage_staff_view(request):
     staff_list = User.objects.filter(role__in=['A', 'D', 'R']).order_by('last_name')
     
     return render(request, 'dashboard/manage_staff.html', {
         'staff_list': staff_list
     })
 
-@login_required
+@admin_required
 def delete_staff(request, staff_id):
     if request.user.role != 'A' or request.method != 'POST':
         return redirect('manage_staff')
@@ -99,11 +109,8 @@ def delete_staff(request, staff_id):
         
     return redirect('manage_staff')
 
-@login_required
-def view_staff_profile(request, staff_id):
-    if request.user.role != 'A':
-        return redirect('home')
-        
+@admin_required
+def view_staff_profile(request, staff_id):        
     user_to_edit = get_object_or_404(User, id=staff_id)
     
     if request.method == "POST":

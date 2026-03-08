@@ -38,7 +38,7 @@ class Command(BaseCommand):
             # Assign Permissions to the Group
             for perm_code in permissions:
                 try:
-                    # Django permissions are named: 'codename' (e.g., 'add_appointment')
+                    # Django permissions are named: 'codename' ('add_appointment')
                     permission = Permission.objects.get(codename=perm_code)
                     group.permissions.add(permission)
                 except Permission.DoesNotExist:
