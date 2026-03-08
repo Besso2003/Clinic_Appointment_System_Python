@@ -12,6 +12,8 @@ urlpatterns = [
     path('update/<int:pk>/', views.update_doctor_schedule, name='schedule-update'),
 
     path('delete/<int:pk>/', views.delete_doctor_schedule, name='schedule-delete'),
+    
+    path('exception/<int:pk>/', views.make_schedule_exception, name='schedule-exception'),
     ]
     
     

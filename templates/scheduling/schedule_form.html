@@ -11,7 +11,12 @@
 
 <div class="glass-card auth-card" style="max-width: 600px;">
     <div class="medical-icon">📅</div>
-    <h2>Create / Update Schedule</h2>
+
+    {% if schedule %}
+        <h2>Edit Schedule</h2>
+    {% else %}
+        <h2>Create Schedule</h2>
+    {% endif %}
 
     <form method="post" class="med-form">
         {% csrf_token %}
@@ -30,6 +35,15 @@
             Save Schedule
         </button>
     </form>
+
+    {% if schedule %}
+    <form method="post" action="{% url 'schedule-exception' schedule.id %}" style="margin-top:15px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-med btn-outline" style="width:100%; background:#f59e0b; color:white;">
+            Make Today Exception (Doctor Off Today)
+        </button>
+    </form>
+    {% endif %}
 
     <div style="text-align:center; margin-top:15px;">
         <a href="{% url 'schedule-list' %}">Back to Schedule List</a>
