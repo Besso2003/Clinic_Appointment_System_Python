@@ -1,6 +1,24 @@
 {% extends 'base.html' %}
 {% block title %}MediFlow | Consultation Details{% endblock %}
 
+{% block header_nav %}
+    {% if user.is_authenticated %}
+        {% if user.role == 'A' %}
+            <a href="{% url 'admin' %}">Home</a>
+        {% elif user.role == 'D' %}
+            <a href="{% url 'doctor' %}">Home</a>
+        {% elif user.role == 'R' %}
+            <a href="{% url 'receptionist' %}">Home</a>
+        {% elif user.role == 'P' %}
+            <a href="{% url 'patient' %}">Home</a>
+        {% else %}
+            <a href="{% url 'home' %}">Home</a>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'home' %}">Home</a>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 
 <!-- ================= PAGE HEADER ================= -->
