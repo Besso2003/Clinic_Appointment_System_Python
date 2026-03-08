@@ -435,7 +435,7 @@ def get_today_queue():
     today = timezone.localdate()
 
     queue = Appointment.objects.filter(
-        slot__date=today,
+        slot__date__gte=today,
         status="CHECKED_IN"
     ).select_related(
         "patient",
@@ -573,6 +573,7 @@ def list_doctor_appointments(request):
 
 
 
+## done groups and permissions
 @login_required
 @handle_errors
 def list_today_appointments(request):
@@ -585,6 +586,7 @@ def list_today_appointments(request):
     
     weekday_number = today.weekday()
 
+    # Remove this comment later
 
     appointments = Appointment.objects.filter(
         slot__doctor_schedule__day_of_week=weekday_number
@@ -592,6 +594,7 @@ def list_today_appointments(request):
         "patient", "doctor", "slot"
     )
 
+    # Comment this later
 
     # appointments = Appointment.objects.filter(
     #     slot__date__gte=today
@@ -639,60 +642,6 @@ def list_today_appointments(request):
 
     return render(request, "appointments/receptionist_list_appointments.html", context)
 
-## done groups and permissions
-# @login_required
-# @handle_errors
-# def list_today_appointments(request):
-
-#     user = request.user
-
-#     if not user.groups.filter(name="Receptionist").exists():
-#         raise PermissionDenied("Only Receptionists are allowed to view today's appointments.")
-    
-
-#     today = timezone.localdate()
-#     weekday_number = today.weekday()
-
-#     appointments = Appointment.objects.filter(
-#         slot__doctor_schedule__day_of_week=weekday_number
-#     ).select_related(
-#         "patient", "doctor", "slot"
-#     )
-
-
-#     status = request.GET.get("status")
-#     doctor = request.GET.get("doctor")
-#     patient = request.GET.get("patient")
-#     start_date = request.GET.get("start_date")
-#     end_date = request.GET.get("end_date")
-#     search = request.GET.get("search")
-
-#     if status:
-#         appointments = appointments.filter(status=status)
-#     if doctor:
-#         appointments = appointments.filter(doctor_id=doctor)
-#     if patient:
-#         appointments = appointments.filter(patient_id=patient)
-#     if start_date:
-#         appointments = appointments.filter(slot__date__gte=start_date)
-#     if end_date:
-#         appointments = appointments.filter(slot__date__lte=end_date)
-#     if search:
-#         appointments = appointments.filter(
-#             Q(id__icontains=search) |
-#             Q(patient__first_name__icontains=search) |
-#             Q(patient__last_name__icontains=search)
-#         )
-
-#     appointments = appointments.order_by("slot__date", "slot__start_time")
-
-#     paginator = Paginator(appointments, 7)
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-
-#     return render(request, "appointments/receptionist_list_appointments.html", {
-#         "appointments": page_obj
-#     })
 
 ## done groups and permissions
 @login_required
