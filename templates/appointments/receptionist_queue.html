@@ -34,7 +34,6 @@
             background: #f9fafb;
         }
 
-        /* Waiting column width */
         .table td.waiting-col {
             width: 120px;
             text-align: center;
@@ -93,10 +92,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
 
-        .clickable-row:hover {
-            background-color: #f3f4f6;
-        }
-
         h2 {
             margin-bottom: 15px;
             font-size: 22px;
@@ -116,11 +111,32 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Keep links/buttons/forms inside rows clickable */
         .clickable-row a,
         .clickable-row button,
         .clickable-row form {
             pointer-events: auto;
+        }
+
+        .filter-form {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-form label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .filter-form select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-family: 'Sora', sans-serif;
+            min-width: 180px;
         }
     </style>
 </head>
@@ -136,13 +152,19 @@
             <div class="glass-card">
                 <h2>Receptionist Queue</h2>
 
-                <!-- <form method="POST" action="{% url 'call_next_patient' %}">
-            {% csrf_token %}
-            <button class="btn-med btn-solid">Call Next Patient</button>
-        </form> -->
-
-                <br>
-
+              <form method="get" class="filter-form">
+    <div>
+        <label for="doctor">Filter by Doctor:</label>
+        <select name="doctor" id="doctor" onchange="this.form.submit()">
+            <option value="">All Doctors</option>
+            {% for doc in doctors %}
+            <option value="{{ doc.id }}" {% if selected_doctor == doc.id|stringformat:"s" %}selected{% endif %}>
+                Dr. {{ doc.get_full_name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
                 {% if queue %}
                 <table class="table">
                     <thead>
@@ -181,8 +203,7 @@
                             </td>
                             <td>
                                 {% if appt.status == "CONFIRMED" %}
-                                <form method="post" action="{% url 'mark_as_checked_in' appt.id %}"
-                                    style="display:inline;">
+                                <form method="post" action="{% url 'mark_as_checked_in' appt.id %}" style="display:inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn-med btn-solid btn-small">Check-In</button>
                                 </form>
