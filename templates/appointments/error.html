@@ -48,7 +48,16 @@
     <div class="error-container">
       <h1>Oops! An Error Occurred</h1>
       <p>{{ error_message }}</p>
-      <a href="{% url home_url %}">Go Back Home</a>
-    </div>
+<a href="
+{% if user.role == 'D' %}
+    {% url 'doctor' %}
+{% elif user.role == 'P' %}
+    {% url 'patient' %}
+{% elif user.role == 'R' %}
+    {% url 'receptionist' %}
+{% else %}
+    {% url 'admin:index' %}
+{% endif %}
+">Go Back Home</a>    </div>
   </body>
 </html>

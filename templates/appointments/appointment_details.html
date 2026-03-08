@@ -34,8 +34,16 @@
         <header class="main-header">
             <div class="logo-text">✚ MediFlow</div>
             <nav>
-                <a href="{% url 'patient' %}">Home</a>
-            </nav>
+    {% if user.role == "D" %}
+        <a href="{% url 'doctor' %}">Home</a>
+    {% elif user.role == "P" %}
+        <a href="{% url 'patient' %}">Home</a>
+    {% elif user.role == "R" %}
+        <a href="{% url 'receptionist' %}">Home</a>
+    {% elif user.role == "A" %}
+        <a href="{% url 'admin' %}">Home</a>
+    {% endif %}
+</nav>
         </header>
 
         <main class="content-section">

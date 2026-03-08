@@ -324,15 +324,48 @@
 
                     <div class="search-group">
                         <label>Status</label>
-                        <select name="status">
-                            <option value="">All</option>
-                            <option value="REQUESTED" {% if request.GET.status == "REQUESTED" %}selected{% endif %}>Requested</option>
-                            <option value="CONFIRMED" {% if request.GET.status == "CONFIRMED" %}selected{% endif %}>Confirmed</option>
-                            <option value="CHECKED_IN" {% if request.GET.status == "CHECKED_IN" %}selected{% endif %}>Checked In</option>
-                            <option value="COMPLETED" {% if request.GET.status == "COMPLETED" %}selected{% endif %}>Completed</option>
-                            <option value="NO_SHOW" {% if request.GET.status == "NO_SHOW" %}selected{% endif %}>No Show</option>
-                            <option value="CANCELLED" {% if request.GET.status == "CANCELLED" %}selected{% endif %}>Cancelled</option>
-                        </select>
+  <select name="status">
+    <option value=""
+        {% if "status" in request.GET and request.GET.status == "" %}selected{% endif %}>
+        All
+    </option>
+
+    <option value="REQUESTED"
+        {% if not "status" in request.GET or request.GET.status == "REQUESTED" %}selected{% endif %}>
+        Requested
+    </option>
+
+    <option value="CONFIRMED"
+        {% if request.GET.status == "CONFIRMED" %}selected{% endif %}>
+        Confirmed
+    </option>
+
+    <option value="CHECKED_IN"
+        {% if request.GET.status == "CHECKED_IN" %}selected{% endif %}>
+        Checked In
+    </option>
+
+    <option value="COMPLETED"
+        {% if request.GET.status == "COMPLETED" %}selected{% endif %}>
+        Completed
+    </option>
+
+    <option value="NO_SHOW"
+        {% if request.GET.status == "NO_SHOW" %}selected{% endif %}>
+        No Show
+    </option>
+
+    <option value="CANCELLED"
+        {% if request.GET.status == "CANCELLED" %}selected{% endif %}>
+        Cancelled
+    </option>
+</select>
+
+{% if not "status" in request.GET %}
+<script>
+document.querySelector('.search-form').submit();
+</script>
+{% endif %}
                     </div>
 
                     <button type="submit" class="search-btn">Search</button>
@@ -363,29 +396,38 @@
                             {% endif %}
                         </td>
                         <td onclick="event.stopPropagation()">
-                            {% if appointment.status == "REQUESTED" %}
-                                <form method="post" action="{% url 'confirm_appointment' appointment.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn confirm">Confirm</button>
-                                </form>
-                                <form method="post" action="{% url 'cancel_appointment' appointment.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn cancel">Cancel</button>
-                                </form>
-                            {% elif appointment.status == "CONFIRMED" %}
-                                <form method="post" action="{% url 'mark_as_no_show' appointment.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn noshow">No Show</button>
-                                </form>
-                            {% elif appointment.status == "CHECKED_IN" %}
-                                <form method="post" action="{% url 'mark_as_completed' appointment.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="action-btn confirm">Complete</button>
-                                </form>
-                            {% else %}
-                                <span class="badge {{ appointment.status|lower }}">{{ appointment.status|capfirst }}</span>
-                            {% endif %}
-                        </td>
+    {% if appointment.status == "REQUESTED" %}
+        <form method="post" action="{% url 'confirm_appointment' appointment.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="action-btn confirm">Confirm</button>
+        </form>
+
+        <form method="post" action="{% url 'cancel_appointment' appointment.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="action-btn cancel">Cancel</button>
+        </form>
+
+        <!-- Reschedule button -->
+        <form method="get" action="{% url 'show_reschedule_form' appointment.id %}" style="display:inline;">
+            <button type="submit" class="action-btn checkin">Reschedule</button>
+        </form>
+
+    {% elif appointment.status == "CONFIRMED" %}
+        <form method="post" action="{% url 'mark_as_no_show' appointment.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="action-btn noshow">No Show</button>
+        </form>
+
+    {% elif appointment.status == "CHECKED_IN" %}
+        <form method="post" action="{% url 'mark_as_completed' appointment.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="action-btn confirm">Complete</button>
+        </form>
+
+    {% else %}
+        <span class="badge {{ appointment.status|lower }}">{{ appointment.status|capfirst }}</span>
+    {% endif %}
+</td>
                     </tr>
                 {% endfor %}
                 </tbody>
