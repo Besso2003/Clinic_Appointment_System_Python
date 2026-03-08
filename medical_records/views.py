@@ -53,7 +53,7 @@ class CreateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, Role
         return (
             user.groups.filter(name="Doctor").exists()
             and appointment.doctor_id == user.id
-            #and appointment.slot.date == today
+            and appointment.slot.date == today
         )
 
     def dispatch(self, request, *args, **kwargs):
@@ -97,7 +97,7 @@ class UpdateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, Upda
         return (
             user.groups.filter(name="Doctor").exists()
             and appointment.doctor_id == user.id
-            #and appointment.slot.date == today
+            and appointment.slot.date == today
         )
 
 

@@ -14,10 +14,12 @@
     <div class="logo-text">✚ MediFlow</div>
 
     <nav class="nav-center">
-        <a href="{% url 'home' %}#features">Features</a>
-        <a href="{% url 'home' %}#solutions">Solutions</a>
-        <a href="{% url 'home' %}#workflow">Workflow</a>
-        <a href="{% url 'home' %}#security">Security</a>
+        {% block header_nav %}
+            <a href="{% url 'home' %}#features">Features</a>
+            <a href="{% url 'home' %}#solutions">Solutions</a>
+            <a href="{% url 'home' %}#workflow">Workflow</a>
+            <a href="{% url 'home' %}#security">Security</a>
+        {% endblock %}
     </nav>
 
     <div class="nav-right">
