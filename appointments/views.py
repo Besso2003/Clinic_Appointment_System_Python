@@ -435,7 +435,7 @@ def get_today_queue():
     today = timezone.localdate()
 
     queue = Appointment.objects.filter(
-        slot__date=today,
+        slot__date__gte=today,
         status="CHECKED_IN"
     ).select_related(
         "patient",
@@ -585,6 +585,7 @@ def list_today_appointments(request):
     
     weekday_number = today.weekday()
 
+    # Remove this comment later
 
     appointments = Appointment.objects.filter(
         slot__doctor_schedule__day_of_week=weekday_number
@@ -592,6 +593,7 @@ def list_today_appointments(request):
         "patient", "doctor", "slot"
     )
 
+    # Comment this later
 
     # appointments = Appointment.objects.filter(
     #     slot__date__gte=today

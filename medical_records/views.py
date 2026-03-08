@@ -8,6 +8,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 
 from appointments.models import Appointment
+from appointments.views import handle_errors
 from .models import ConsultationRecord
 from .forms import ConsultationRecordForm
 
@@ -85,6 +86,7 @@ class UpdateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, Upda
     template_name = 'medical_records/consultationrecord_form.html'
     permission_required = "medical_records.change_consultationrecord"
 
+ 
     def has_permission(self):
         if not super().has_permission():
             return False
