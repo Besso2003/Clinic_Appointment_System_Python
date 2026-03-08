@@ -13,6 +13,9 @@
 
     <header class="main-header">
         <div class="logo-text">✚ MediFlow</div>
+        <a href="{% url 'doctor' %}" class="btn-med btn-outline" style="background:#16a34a; color:white;">
+            Back to Home
+        </a>
     </header>
 
     <section class="content-section">
@@ -31,8 +34,10 @@
                 <p><strong>From:</strong> {{ schedule.start_time|time:"h:i A" }}</p>
                 <p><strong>To:</strong> {{ schedule.end_time|time:"h:i A" }}</p>
                 <div style="margin-top:15px;">
-                    <a href="{% url 'schedule-update' schedule.id %}" class="btn-med btn-outline">Edit</a>
-                    <a href="{% url 'schedule-delete' schedule.id %}" class="btn-med btn-solid"
+                    <a href="{% url 'schedule-update' schedule.id %}" class="btn-med btn-outline"
+                        style="background:#2563eb; color:white;">
+                        Edit
+                    </a> <a href="{% url 'schedule-delete' schedule.id %}" class="btn-med btn-solid"
                         style="background:#dc2626;">Delete</a>
                 </div>
             </div>

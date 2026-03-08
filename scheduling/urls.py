@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from . import views
 
 
@@ -12,6 +12,6 @@ urlpatterns = [
     path('update/<int:pk>/', views.update_doctor_schedule, name='schedule-update'),
 
     path('delete/<int:pk>/', views.delete_doctor_schedule, name='schedule-delete'),
-]
+    ]
     
     
