@@ -2,7 +2,7 @@ from django.db import models
 
 
 class ConsultationRecord(models.Model):
-    appointment = models.ForeignKey('appointments.Appointment', on_delete=models.CASCADE, unique=True)
+    appointment = models.OneToOneField('appointments.Appointment',on_delete=models.CASCADE)
     diagnosis = models.TextField()
     notes = models.TextField()
     prescription = models.TextField()

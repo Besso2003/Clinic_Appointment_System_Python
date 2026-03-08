@@ -25,6 +25,39 @@
             border-spacing: 0 5px;
             /* vertical space between rows */
         }
+
+        .medical-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .medical-card-subtitle {
+            margin: 0 0 14px;
+            font-size: 0.9rem;
+            color: #c5d0dd;
+        }
+
+        .medical-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .medical-card-actions .btn-med {
+            padding-inline: 18px;
+            min-width: 160px;
+            text-align: center;
+        }
+
+        .btn-med-disabled {
+            opacity: 0.45;
+            cursor: default;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -110,8 +143,61 @@
                 </div>
                 {% endif %}
 
+                <!-- Medical Records Actions -->
+                <div class="feature-card" style="margin-top:25px;">
+                    <div class="medical-card-header">
+                        <h3 style="margin:0;">Medical Records</h3>
+                    </div>
+
+                    <p class="medical-card-subtitle">
+                        {% if consultation_record %}
+                            A consultation record is linked to this appointment.
+                        {% else %}
+                            No consultation record has been created for this appointment yet.
+                        {% endif %}
+                    </p>
+
+                    <div class="medical-card-actions">
+                        {% if request.user.role == 'D' %}
+                            <a
+                                href="{% if consultation_record %}
+                                            {% url 'consultation-update' consultation_record.id %}
+                                       {% else %}
+                                            {% url 'consultation-create' appointment.id %}
+                                       {% endif %}"
+                                class="btn-med btn-primary">
+                                {% if consultation_record %}
+                                    Edit record
+                                {% else %}
+                                    Create record
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <button type="button" class="btn-med btn-outline btn-med-disabled">
+                                Doctor only
+                            </button>
+                        {% endif %}
+
+                        <a
+                            href="{% if consultation_record %}
+                                        {% url 'consultation-view' consultation_record.id %}
+                                   {% else %}
+                                        #
+                                   {% endif %}"
+                            class="btn-med btn-outline {% if not consultation_record %}btn-med-disabled{% endif %}">
+                            View record
+                        </a>
+
+                        <a
+                            href="{% url 'patient-medical-history' appointment.patient.id %}"
+                            class="btn-med btn-primary">
+                            Patient history
+                        </a>
+                    </div>
+                </div>
+
                 <div style="margin-top:25px;text-align:center;">
-                    <a href="{% url 'list_patient_appointments' %}" class="btn-med btn-outline">
+                    <a href="{% url 'list_patient_appointments' %}" class="btn-med btn-primary">
                         Back
                     </a>
                 </div>
