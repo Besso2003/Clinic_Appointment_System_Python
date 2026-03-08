@@ -34,8 +34,11 @@ class DoctorSchedule(models.Model):
         unique_together = ('doctor', 'day_of_week', 'start_time', 'end_time')
 
     def clean(self):
-        if self.doctor and self.doctor.role != 'D':
-            raise ValidationError("Selected user is not a doctor.")
+        if not self.doctor_id:
+           return
+       
+        if self.doctor.role != 'D':
+          raise ValidationError("Selected user is not a doctor.")
 
         if self.start_time >= self.end_time:
             raise ValidationError("Start time must be before end time.")

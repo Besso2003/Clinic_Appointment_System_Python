@@ -1,6 +1,7 @@
 from django import forms
 from .models import DoctorSchedule
 
+
 class DoctorScheduleForm(forms.ModelForm):
 
     TIME_CHOICES = [
@@ -20,4 +21,4 @@ class DoctorScheduleForm(forms.ModelForm):
 
     class Meta:
         model = DoctorSchedule
-        fields = ['doctor', 'day_of_week', 'start_time', 'end_time']
+        fields = ['day_of_week', 'start_time', 'end_time']
