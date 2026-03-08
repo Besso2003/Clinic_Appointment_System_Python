@@ -1,28 +1,58 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>MediFlow | Reschedule Appointment</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
-</head>
-<body>
-<div class="page-wrapper">
+    <style>
+        /* Add padding inside table cells */
+        .appointment-table-wrapper table th,
+        .appointment-table-wrapper table td {
+            padding: 12px 20px;
+            /* 12px top/bottom, 20px left/right */
+            text-align: left;
+            /* align text to left */
+        }
 
-    <!-- HEADER -->
-    <header class="main-header">
-        <div class="logo-text">✚ MediFlow</div>
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            {% if user.is_authenticated %}
+        /* Optional: space between rows (if using borders) */
+        .appointment-table-wrapper table {
+            border-collapse: separate;
+            /* allow spacing between cells */
+            border-spacing: 0 8px;
+            /* 8px vertical spacing between rows */
+        }
+
+        /* Optional: make table header bold and spaced */
+        .appointment-table-wrapper table th {
+            font-weight: 600;
+        }
+
+        /* Optional: alternate row background for readability */
+        .appointment-table-wrapper table tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-wrapper">
+
+        <!-- HEADER -->
+        <header class="main-header">
+            <div class="logo-text">✚ MediFlow</div>
+            <nav>
+                <a href="{% url 'home' %}">Home</a>
+                {% if user.is_authenticated %}
                 <div class="user-menu">
                     <a href="{% url 'profile' %}" class="user-info">
                         {% if user.profile_picture %}
-                            <img src="{{ user.profile_picture.url }}" class="avatar">
+                        <img src="{{ user.profile_picture.url }}" class="avatar">
                         {% else %}
-                            <img src="{% static 'img/default-avatar.png' %}" class="avatar">
+                        <img src="{% static 'img/default-avatar.png' %}" class="avatar">
                         {% endif %}
                         <span class="username">{{ user.username }}</span>
                     </a>
@@ -31,37 +61,36 @@
                         <button type="submit" class="btn-med btn-outline">Logout</button>
                     </form>
                 </div>
-            {% endif %}
-        </nav>
-    </header>
+                {% endif %}
+            </nav>
+        </header>
 
-    <!-- CONTENT -->
-    <main class="content-section">
-        <div class="glass-card">
-            <h2>Reschedule Appointment</h2>
+        <!-- CONTENT -->
+        <main class="content-section">
+            <div class="glass-card">
+                <h2>Reschedule Appointment</h2>
 
-            <!-- Current Appointment Info -->
-            <div class="feature-card" style="margin-bottom:30px;">
-                <h3>Current Appointment</h3>
-                <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
-                <p><strong>Date:</strong> {{ appointment.slot.date|date:"Y-m-d" }}</p>
-                <p><strong>Time:</strong> {{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i" }}</p>
-                <p><span class="badge">{{ appointment.get_status_display }}</span></p>
-            </div>
+                <!-- Current Appointment Info -->
+                <div class="feature-card" style="margin-bottom:30px;">
+                    <h3>Current Appointment</h3>
+                    <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
+                    <p><strong>Date:</strong> {{ appointment.slot.date|date:"Y-m-d" }}</p>
+                    <p><strong>Time:</strong> {{ appointment.slot.start_time|time:"H:i" }} - {{
+                        appointment.slot.end_time|time:"H:i" }}</p>
+                    <p><span class="badge">{{ appointment.get_status_display }}</span></p>
+                </div>
 
-            <!-- Reason Field -->
-            <div class="feature-card" style="margin-bottom:30px;">
-                <h3>Reason for Rescheduling</h3>
-                <textarea id="reschedule-reason"
-                          name="reason"
-                          placeholder="Enter reason for rescheduling (optional)"
-                          rows="3"
-                          style="width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; font-family:'Sora', sans-serif;"></textarea>
-            </div>
+                <!-- Reason Field -->
+                <div class="feature-card" style="margin-bottom:30px;">
+                    <h3>Reason for Rescheduling</h3>
+                    <textarea id="reschedule-reason" name="reason"
+                        placeholder="Enter reason for rescheduling (optional)" rows="3"
+                        style="width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; font-family:'Sora', sans-serif;"></textarea>
+                </div>
 
-            <!-- Available Slots -->
-            <h3 style="margin-bottom: 15px;">Choose New Slot</h3>
-            {% if slots %}
+                <!-- Available Slots -->
+                <h3 style="margin-bottom: 15px;">Choose New Slot</h3>
+                {% if slots %}
                 <div class="appointment-table-wrapper">
                     <table class="table">
                         <thead>
@@ -72,63 +101,65 @@
                             </tr>
                         </thead>
                         <tbody>
-                        {% for slot in slots %}
+                            {% for slot in slots %}
                             <tr>
                                 <td>{{ slot.date|date:"Y-m-d" }}</td>
                                 <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
                                 <td>
                                     <form method="POST"
-                                          action="{% url 'reschedule_appointment' appointment.id slot.id %}"
-                                          onsubmit="attachReason(this)">
+                                        action="{% url 'reschedule_appointment' appointment.id slot.id %}"
+                                        onsubmit="attachReason(this)">
                                         {% csrf_token %}
                                         <input type="hidden" name="reason">
                                         <button type="submit" class="btn-med btn-solid confirm">Select</button>
                                     </form>
                                 </td>
                             </tr>
-                        {% endfor %}
+                            {% endfor %}
                         </tbody>
                     </table>
 
                     <!-- PAGINATION -->
                     {% if slots.has_other_pages %}
-                        <div class="pagination" style="margin-top:15px; display:flex; justify-content:center; gap:10px;">
-                            {% if slots.has_previous %}
-                                <a href="?page={{ slots.previous_page_number }}">Previous</a>
-                            {% endif %}
-                            <span>Page {{ slots.number }} of {{ slots.paginator.num_pages }}</span>
-                            {% if slots.has_next %}
-                                <a href="?page={{ slots.next_page_number }}">Next</a>
-                            {% endif %}
-                        </div>
+                    <div class="pagination" style="margin-top:15px; display:flex; justify-content:center; gap:10px;">
+                        {% if slots.has_previous %}
+                        <a href="?page={{ slots.previous_page_number }}">Previous</a>
+                        {% endif %}
+                        <span>Page {{ slots.number }} of {{ slots.paginator.num_pages }}</span>
+                        {% if slots.has_next %}
+                        <a href="?page={{ slots.next_page_number }}">Next</a>
+                        {% endif %}
+                    </div>
                     {% endif %}
                 </div>
-            {% else %}
+                {% else %}
                 <p class="no-slots">No available slots for this doctor.</p>
-            {% endif %}
+                {% endif %}
 
-            <!-- Back Button -->
-            <div style="margin-top:25px; text-align:center;">
-                <a href="{% url 'list_patient_appointments' %}" class="btn-med btn-outline cancel">Cancel & Go Back</a>
+                <!-- Back Button -->
+                <div style="margin-top:25px; text-align:center;">
+                    <a href="{% url 'list_patient_appointments' %}" class="btn-med btn-outline cancel">Cancel & Go
+                        Back</a>
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
 
-    <!-- FOOTER -->
-    <footer class="main-footer">
-        <p>© {% now "Y" %} MediFlow</p>
-        <p>Smart, Secure, Scalable Clinic Management.</p>
-    </footer>
+        <!-- FOOTER -->
+        <footer class="main-footer">
+            <p>© {% now "Y" %} MediFlow</p>
+            <p>Smart, Secure, Scalable Clinic Management.</p>
+        </footer>
 
-</div>
+    </div>
 
-<!-- Script to Attach Reason -->
-<script>
-function attachReason(form) {
-    const reason = document.getElementById("reschedule-reason").value.trim();
-    form.querySelector("input[name='reason']").value = reason;
-}
-</script>
+    <!-- Script to Attach Reason -->
+    <script>
+        function attachReason(form) {
+            const reason = document.getElementById("reschedule-reason").value.trim();
+            form.querySelector("input[name='reason']").value = reason;
+        }
+    </script>
 
 </body>
+
 </html>

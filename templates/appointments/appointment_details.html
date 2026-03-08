@@ -1,108 +1,129 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>MediFlow | Appointment Details</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/appointments.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Add padding to table cells */
+        table.table th,
+        table.table td {
+            padding: 10px 15px;
+            /* 10px top/bottom, 15px left/right */
+            text-align: left;
+            /* optional: left-align text */
+        }
+
+        /* Optional: add some spacing between columns without affecting borders */
+        table.table {
+            border-collapse: separate;
+            /* allows spacing */
+            border-spacing: 0 5px;
+            /* vertical space between rows */
+        }
+    </style>
 </head>
+
 <body>
-<div class="page-wrapper">
+    <div class="page-wrapper">
 
-<header class="main-header">
-    <div class="logo-text">✚ MediFlow</div>
-    <nav>
-        <a href="{% url 'patient' %}">Home</a>
-    </nav>
-</header>
+        <header class="main-header">
+            <div class="logo-text">✚ MediFlow</div>
+            <nav>
+                <a href="{% url 'patient' %}">Home</a>
+            </nav>
+        </header>
 
-<main class="content-section">
-    <div class="glass-card">
+        <main class="content-section">
+            <div class="glass-card">
 
-        <h2>Appointment Details</h2>
+                <h2>Appointment Details</h2>
 
-        <!-- Basic Info -->
-        <div class="feature-card" style="margin-bottom:25px;">
-            <h3>Basic Information</h3>
-            <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
-            <p><strong>Patient:</strong> {{ appointment.patient.get_full_name }}</p>
-            <p><strong>Status:</strong> {{ appointment.get_status_display }}</p>
-        </div>
+                <!-- Basic Info -->
+                <div class="feature-card" style="margin-bottom:25px;">
+                    <h3>Basic Information</h3>
+                    <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
+                    <p><strong>Patient:</strong> {{ appointment.patient.get_full_name }}</p>
+                    <p><strong>Status:</strong> {{ appointment.get_status_display }}</p>
+                </div>
 
-        <!-- Current Appointment Time -->
-        <div class="feature-card" style="margin-bottom:25px;">
-            <h3>Current Appointment Time</h3>
-            <p><strong>Date:</strong> {{ appointment.slot.date|date:"Y-m-d" }}</p>
-            <p><strong>Time:</strong>
-                {{ appointment.slot.start_time|time:"H:i" }} -
-                {{ appointment.slot.end_time|time:"H:i" }}
-            </p>
-        </div>
+                <!-- Current Appointment Time -->
+                <div class="feature-card" style="margin-bottom:25px;">
+                    <h3>Current Appointment Time</h3>
+                    <p><strong>Date:</strong> {{ appointment.slot.date|date:"Y-m-d" }}</p>
+                    <p><strong>Time:</strong>
+                        {{ appointment.slot.start_time|time:"H:i" }} -
+                        {{ appointment.slot.end_time|time:"H:i" }}
+                    </p>
+                </div>
 
-        <!-- Reschedule History -->
-        {% if history %}
-        <div class="feature-card">
-            <h3>Reschedule History</h3>
+                <!-- Reschedule History -->
+                {% if history %}
+                <div class="feature-card">
+                    <h3>Reschedule History</h3>
 
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Old Date</th>
-                        <th>Old Time</th>
-                        <th>New Date</th>
-                        <th>New Time</th>
-                        <th>Reason</th>
-                        <th>Changed By</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for item in history %}
-                    <tr>
-                        <td>{{ item.old_slot.date|date:"Y-m-d" }}</td>
-                        <td>
-                            {{ item.old_slot.start_time|time:"H:i" }} -
-                            {{ item.old_slot.end_time|time:"H:i" }}
-                        </td>
-                        <td>{{ item.new_slot.date|date:"Y-m-d" }}</td>
-                        <td>
-                            {{ item.new_slot.start_time|time:"H:i" }} -
-                            {{ item.new_slot.end_time|time:"H:i" }}
-                        </td>
-                        <td>
-                            {% if item.reason %}
-                                {{ item.reason }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
-                        <td>{{ item.changed_by.get_full_name }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-            <div class="feature-card">
-                <h3>No Reschedule History</h3>
-                <p>This appointment has not been rescheduled before.</p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Old Date</th>
+                                <th>Old Time</th>
+                                <th>New Date</th>
+                                <th>New Time</th>
+                                <th>Reason</th>
+                                <th>Changed By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in history %}
+                            <tr>
+                                <td>{{ item.old_slot.date|date:"Y-m-d" }}</td>
+                                <td>
+                                    {{ item.old_slot.start_time|time:"H:i" }} -
+                                    {{ item.old_slot.end_time|time:"H:i" }}
+                                </td>
+                                <td>{{ item.new_slot.date|date:"Y-m-d" }}</td>
+                                <td>
+                                    {{ item.new_slot.start_time|time:"H:i" }} -
+                                    {{ item.new_slot.end_time|time:"H:i" }}
+                                </td>
+                                <td>
+                                    {% if item.reason %}
+                                    {{ item.reason }}
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.changed_by.get_full_name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="feature-card">
+                    <h3>No Reschedule History</h3>
+                    <p>This appointment has not been rescheduled before.</p>
+                </div>
+                {% endif %}
+
+                <div style="margin-top:25px;text-align:center;">
+                    <a href="{% url 'list_patient_appointments' %}" class="btn-med btn-outline">
+                        Back
+                    </a>
+                </div>
+
             </div>
-        {% endif %}
+        </main>
 
-        <div style="margin-top:25px;text-align:center;">
-            <a href="{% url 'list_patient_appointments' %}" class="btn-med btn-outline">
-                Back
-            </a>
-        </div>
+        <footer class="main-footer">
+            <p>© {% now "Y" %} MediFlow</p>
+        </footer>
 
     </div>
-</main>
-
-<footer class="main-footer">
-    <p>© {% now "Y" %} MediFlow</p>
-</footer>
-
-</div>
 </body>
+
 </html>
