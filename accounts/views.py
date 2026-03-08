@@ -20,7 +20,7 @@ class login_view(LoginView):
         user = self.request.user
     # reverse_lazy delays the URL resolution until runtime, when the view is actually called
         if user.role == 'A':
-            return reverse_lazy('admin')
+            return reverse_lazy('admin_analytics')
         elif user.role == 'D':  
             return reverse_lazy('doctor')
         elif user.role == 'R': 

@@ -3,21 +3,20 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from appointments.models import Appointment
 from appointments.views import get_today_queue, list_patient_appointments
+from dashboard.decorators import role_required
 
 # Create your views here.
 
 @login_required
+@role_required(["A"])
 def admin_dashboard(request):
 	return render(request, 'dashboard/admin.html')
 
 from django.utils import timezone
 
 @login_required
+@role_required(["D"])
 def doctor_dashboard(request):
-
-    if request.user.role != "D":
-        return HttpResponseForbidden("Only doctors allowed.")
-
     appointments = Appointment.objects.filter(
         doctor=request.user
     ).select_related("patient", "slot")
@@ -34,6 +33,7 @@ def doctor_dashboard(request):
     return render(request, "dashboard/doctor.html", context)
 
 @login_required
+@role_required(["R"])
 def receptionist_dashboard(request):
         today_queue = get_today_queue()  # just call the function
 
@@ -42,16 +42,9 @@ def receptionist_dashboard(request):
         })
 	# return render(request, 'dashboard/receptionist.html')
 
-# @login_required
-# def patient_dashboard(request):
-# 	return render(request, 'dashboard/patient.html')
-
 @login_required
+@role_required(["P"])
 def patient_dashboard(request):
-
-    if request.user.role != "P":
-        return HttpResponseForbidden("Only patients allowed.")
-
     appointments = Appointment.objects.filter(
         patient=request.user
     ).select_related("doctor", "slot")

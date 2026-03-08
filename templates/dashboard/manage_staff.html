@@ -15,11 +15,7 @@
             </div>
             <nav class="nav-menu">
                 <ul>
-                    <li>
-                        <a href="{% url 'admin' %}" class="{% if request.resolver_match.url_name == 'admin' %}active{% endif %}">
-                            System Overview
-                        </a>
-                    </li>
+                                        <li><a href="{% url 'admin_analytics' %}" class="{% if request.resolver_match.url_name == 'admin_analytics' %}active{% endif %}">Clinic Analytics</a></li>
                     <li>
                         <a href="{% url 'staff_register' %}" class="{% if request.resolver_match.url_name == 'staff_register' %}active{% endif %}">
                             Register Staff
@@ -30,8 +26,7 @@
                             Manage Staff
                         </a>
                     </li>
-                    <li><a href="#">Clinic Analytics</a></li>
-                    <li><a href="{% url 'profile' %}">Profile</a></li>
+                    <li><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a></li>
                     <li>
                         <form action="{% url 'logout' %}" method="post" style="display: block; width: 100%;">
                             {% csrf_token %}
