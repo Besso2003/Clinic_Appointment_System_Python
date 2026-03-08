@@ -585,11 +585,13 @@ def list_today_appointments(request):
     
     weekday_number = today.weekday()
 
+
     appointments = Appointment.objects.filter(
         slot__doctor_schedule__day_of_week=weekday_number
     ).select_related(
         "patient", "doctor", "slot"
     )
+
 
     # appointments = Appointment.objects.filter(
     #     slot__date__gte=today

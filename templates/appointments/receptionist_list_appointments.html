@@ -279,18 +279,20 @@
                         <td>{{ appointment.slot.date|date:"Y-m-d" }}</td>
                         <td>{{ appointment.slot.start_time|time:"H:i" }} - {{ appointment.slot.end_time|time:"H:i" }}</td>
                         <td>
-                            {% if appointment.status == "REQUESTED" %}
-                                <span class="badge" style="background:#f59e0b;">Requested</span>
-                            {% elif appointment.status == "CONFIRMED" %}
-                                <span class="badge" style="background:#2563eb;">Confirmed</span>
-                            {% elif appointment.status == "CHECKED_IN" %}
-                                <span class="badge" style="background:#10b981;">Checked In</span>
-                            {% elif appointment.status == "NO_SHOW" %}
-                                <span class="badge" style="background:#6b7280;">No Show</span>
-                            {% elif appointment.status == "CANCELLED" %}
-                                <span class="badge" style="background:#ef4444;">Cancelled</span>
-                            {% endif %}
-                        </td>
+    {% if appointment.status == "REQUESTED" %}
+        <span class="badge" style="background:#f59e0b;">Requested</span>
+    {% elif appointment.status == "CONFIRMED" %}
+        <span class="badge" style="background:#2563eb;">Confirmed</span>
+    {% elif appointment.status == "CHECKED_IN" %}
+        <span class="badge" style="background:#10b981;">Checked In</span>
+    {% elif appointment.status == "COMPLETED" %}
+        <span class="badge" style="background:#22c55e;">Completed</span>
+    {% elif appointment.status == "NO_SHOW" %}
+        <span class="badge" style="background:#6b7280;">No Show</span>
+    {% elif appointment.status == "CANCELLED" %}
+        <span class="badge" style="background:#ef4444;">Cancelled</span>
+    {% endif %}
+</td>
                         <td onclick="event.stopPropagation()">
                             {% if appointment.status == "REQUESTED" %}
                             <div class="action-btn-group">
