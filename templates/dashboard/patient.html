@@ -105,7 +105,8 @@
       <nav class="nav-center">
         <a href="{% url 'patient' %}" class="nav-link active">Dashboard</a>
         <a href="{% url 'show_create_appointment_form' %}" class="nav-link">Book Appointment</a>
-        <a href="{% url 'list_patient_appointments' %}" class="nav-link">My History</a>
+        <a href="{% url 'list_patient_appointments' %}" class="nav-link">My Appointments</a>
+        <a href="{% url 'patient-medical-history' user.id %}" class="nav-link">My History</a>
       </nav>
 
       <div class="nav-right">

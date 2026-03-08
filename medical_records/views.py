@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import CreateView, UpdateView, DetailView, ListView
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
 from django.urls import reverse_lazy
 from django.utils import timezone
 
@@ -8,31 +11,7 @@ from appointments.models import Appointment
 from .models import ConsultationRecord
 from .forms import ConsultationRecordForm
 
-
-class CreateConsultationRecord(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-    model = ConsultationRecord
-    form_class = ConsultationRecordForm
-    template_name = 'medical_records/consultationrecord_form.html'
-
-    def get_appointment(self):
-        return get_object_or_404(
-            Appointment,
-            id=self.kwargs['appointment_id']
-        )
-
-    def test_func(self):
-        appointment = self.get_appointment()
-        user = self.request.user
-        today = timezone.localdate()
-        #print(appointment.doctor_id, user.id)
-
-        return (
-            user.is_authenticated
-            and getattr(user, "role", None) == "D"
-            and appointment.doctor_id == user.id
-            and appointment.slot.date == today
-        )
-
+class RoleRedirectMixin:
     def handle_no_permission(self):
         user = self.request.user
 
@@ -41,16 +20,55 @@ class CreateConsultationRecord(LoginRequiredMixin, UserPassesTestMixin, CreateVi
 
         role = getattr(user, "role", None)
 
-        if role == "A":
-            return redirect("admin")
-        elif role == "D":
-            return redirect("doctor")
-        elif role == "R":
-            return redirect("receptionist")
-        elif role == "P":
-            return redirect("patient")
+        redirects = {
+            "A": "admin",
+            "R": "receptionist",
+            "D": "doctor",
+            "P": "patient",
+        }
 
-        return redirect("home")
+        return redirect(redirects.get(role, "home"))
+
+
+class CreateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, RoleRedirectMixin, CreateView):
+    model = ConsultationRecord
+    form_class = ConsultationRecordForm
+    template_name = 'medical_records/consultationrecord_form.html'
+    permission_required = "medical_records.add_consultationrecord"
+
+    def get_appointment(self):
+        return get_object_or_404(
+            Appointment,
+            id=self.kwargs['appointment_id']
+        )
+
+    def has_permission(self):
+        if not super().has_permission():
+            return False
+
+        appointment = self.get_appointment()
+        user = self.request.user
+        today = timezone.localdate()
+
+        return (
+            user.groups.filter(name="Doctor").exists()
+            and appointment.doctor_id == user.id
+            and appointment.slot.date == today
+        )
+
+    def dispatch(self, request, *args, **kwargs):
+        appointment = self.get_appointment()
+
+        existing_record = ConsultationRecord.objects.filter(
+            appointment=appointment
+        ).first()
+
+        if existing_record:
+            return redirect("consultation-update", pk=existing_record.pk)
+
+        return super().dispatch(request, *args, **kwargs)
+
+
 
     def form_valid(self, form):
         appointment = self.get_appointment()
@@ -61,105 +79,69 @@ class CreateConsultationRecord(LoginRequiredMixin, UserPassesTestMixin, CreateVi
         return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
 
-class UpdateConsultationRecord(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class UpdateConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = ConsultationRecord
     form_class = ConsultationRecordForm
     template_name = 'medical_records/consultationrecord_form.html'
-    def get_appointment(self):
-        return get_object_or_404(
-            Appointment,
-            id=self.kwargs['appointment_id']
-        )
+    permission_required = "medical_records.change_consultationrecord"
 
-    def test_func(self):
+    def has_permission(self):
+        if not super().has_permission():
+            return False
+
         record = self.get_object()
         appointment = record.appointment
         user = self.request.user
         today = timezone.localdate()
 
-        #print(appointment.doctor_id, user.id)
-
         return (
-            user.is_authenticated
-            and getattr(user, "role", None) == "D"
+            user.groups.filter(name="Doctor").exists()
             and appointment.doctor_id == user.id
             and appointment.slot.date == today
         )
 
-    def handle_no_permission(self):
-        user = self.request.user
-
-        if not user.is_authenticated:
-            return redirect("login")
-
-        role = getattr(user, "role", None)
-
-        if role == "A":
-            return redirect("admin")
-        elif role == "D":
-            return redirect("doctor")
-        elif role == "R":
-            return redirect("receptionist")
-        elif role == "P":
-            return redirect("patient")
-
-        return redirect("home")
 
     def get_success_url(self):
         return reverse_lazy("consultation-view", kwargs={"pk": self.object.pk})
 
-class ViewConsultationRecord(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class ViewConsultationRecord(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = ConsultationRecord
     template_name = 'medical_records/consultationrecord_detail.html'
     context_object_name = 'record'
-    def test_func(self):
+    permission_required = "medical_records.view_consultationrecord"
+
+    def has_permission(self):
+        if not super().has_permission():
+            return False
+
         user = self.request.user
         record = self.get_object()
         appointment = record.appointment
 
-        role = getattr(user, "role", None)
-        #print(appointment.doctor_id)
-        #print(user.id)
-        #print(role)
         return (
-            (role == "D" and appointment.doctor_id == user.id) or
-            (role == "P" and appointment.patient_id == user.id)
+            (user.groups.filter(name="Doctor").exists() and appointment.doctor_id == user.id) or
+            (user.groups.filter(name="Patient").exists() and appointment.patient_id == user.id)
         )
 
-    def handle_no_permission(self):
-        user = self.request.user
-
-        if not user.is_authenticated:
-            return redirect("login")
-
-        role = getattr(user, "role", None)
-        
-        if role == "A":
-            return redirect("admin")
-        elif role == "R":
-            return redirect("receptionist")
-        elif role == "D":
-            return redirect("doctor")
-        elif role == "P":
-            return redirect("patient")
 
 
-class PatientMedicalHistory(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class PatientMedicalHistory(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = ConsultationRecord
     template_name = 'medical_records/patient_medical_history.html'
     context_object_name = 'consultations'
+    permission_required = "medical_records.view_consultationrecord"
 
-    def test_func(self):
+    def has_permission(self):
+        if not super().has_permission():
+            return False
+
         user = self.request.user
         patient_id = int(self.kwargs['patient_id'])
-        role = getattr(user, "role", None)
 
-        if role == "P":
+        if user.groups.filter(name="Patient").exists():
             return user.id == patient_id
 
-        if role == "D":
-            #print(patient_id)
-            #print(user.id)
+        if user.groups.filter(name="Doctor").exists():
             return Appointment.objects.filter(
                 patient__id=patient_id,
                 doctor_id=user.id
@@ -167,29 +149,11 @@ class PatientMedicalHistory(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
         return False
 
-    def handle_no_permission(self):
-        user = self.request.user
-
-        if not user.is_authenticated:
-            return redirect("login")
-
-        role = getattr(user, "role", None)
-
-        if role == "A":
-            return redirect("admin")
-        elif role == "R":
-            return redirect("receptionist")
-        elif role == "D":
-            return redirect("doctor")
-        elif role == "P":
-            return redirect("patient")
-
-        return redirect("home")
 
     def get_queryset(self):
         patient_id = self.kwargs['patient_id']
         user = self.request.user
-        if user.role == "D":
+        if user.groups.filter(name="Doctor").exists():
             return ConsultationRecord.objects.filter(
                 appointment__patient__id=patient_id,
                 appointment__doctor_id=user.id

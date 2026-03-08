@@ -19,6 +19,7 @@ class Command(BaseCommand):
         'delete_appointment',
         'view_consultationrecord', 
         'add_consultationrecord',
+        'change_consultationrecord',
     ],
     'Receptionist': [
         'add_user', 

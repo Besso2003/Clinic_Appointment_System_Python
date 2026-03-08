@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied, ValidationError
 from .models import Appointment, Slot, AppointmentRescheduleHistory
+from medical_records.models import ConsultationRecord
 from django.db.models import Q
 from django.contrib.auth.decorators import user_passes_test
 from scheduling.models import DoctorSchedule
@@ -338,9 +339,15 @@ def appointment_details(request, appointment_id):
         appointment=appointment
     ).select_related("old_slot", "new_slot", "changed_by").order_by("-id")
 
+    try:
+        consultation_record = appointment.consultationrecord
+    except ConsultationRecord.DoesNotExist:
+        consultation_record = None
+
     return render(request, "appointments/appointment_details.html", {
         "appointment": appointment,
-        "history": history
+        "history": history,
+        "consultation_record": consultation_record,
     })
 
 ## done groups and permissions
